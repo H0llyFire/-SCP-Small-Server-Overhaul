@@ -102,7 +102,7 @@ namespace SCPSLEnforcedRNG
         {
             Timing.CallDelayed(2f, () => 
             {
-                DebugTranslator.Console(playerList.Count.ToString());
+                DebugTranslator.Console(playerList.Count.ToString(), 1);
 
                 playerList.Add(new PlayerInfo(args.Player, args.Player.UserId));
 
@@ -112,19 +112,19 @@ namespace SCPSLEnforcedRNG
                     "SteamID: " + args.Player.UserId
                     , 0, true);
 
-                playerList[playerList.Count-1].PrintInfo();
+                //playerList[playerList.Count-1].PrintInfo();
             });
         }
         public void OnPlayerLeave(PlayerLeaveEventArgs args)
         {
-
+            /*
             foreach (var player in playerList)
                 if (player.PlayerId == args.Player.UserId)
                 {
                     playerList.Remove(player);
                     break;
                 }
-            DebugTranslator.Console("Player " + args.Player.NickName + " has left the server. Players Left: " + playerList.Count, 0, true);
+            DebugTranslator.Console("Player " + args.Player.NickName + " has left the server. Players Left: " + playerList.Count, 0, true);*/
         }
         public void OnTeamRespawn(TeamRespawnEventArgs args)
         {
@@ -337,10 +337,10 @@ namespace SCPSLEnforcedRNG
         private void AssignRoles(int playerCount)
         {
             string tempOut = "kys:\n";
-            /*foreach (PlayerInfo player in playerList)
+            foreach (PlayerInfo player in playerList)
             { 
                 tempOut += player.PlayerPtr.NickName + " | ";
-            }*/
+            }
             DebugTranslator.Console(tempOut);
 
             string roles = ServerConfigs.RolePicks.Substring(0, playerCount);

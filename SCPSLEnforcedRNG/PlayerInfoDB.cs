@@ -31,11 +31,15 @@ namespace SCPSLEnforcedRNG
         {
             return Get(LiteDB.Query.EQ("GameIdentifier", id));
         }
+        public PlayerInfoDB FindByNickname(string nick)
+        {
+            return Get(LiteDB.Query.EQ("Name", nick));
+        }
     }
 
     public class PlayerInfo
     {
-        private static PlayerRepository _repository = new();
+        public static PlayerRepository repository = new();
         private static int _playerCount = 0;
 
         PlayerInfoDB playerInfo;
@@ -46,33 +50,33 @@ namespace SCPSLEnforcedRNG
         public string PlayerId
         {
             get { return playerInfo.GameIdentifier; }
-            set { playerInfo.GameIdentifier = value; _repository.Save(playerInfo); }
+            set { playerInfo.GameIdentifier = value; repository.Save(playerInfo); }
         }
         //Change count to how many times wasn't a class
         public uint NotSCP 
         { 
             get { return playerInfo.NotSCP; }
-            set { playerInfo.NotSCP = value; _repository.Save(playerInfo); }
+            set { playerInfo.NotSCP = value; repository.Save(playerInfo); }
         }
         public uint NotGuard
         {
             get { return playerInfo.NotGuard; }
-            set { playerInfo.NotGuard = value; _repository.Save(playerInfo); }
+            set { playerInfo.NotGuard = value; repository.Save(playerInfo); }
         }
         public uint NotDboi
         {
             get { return playerInfo.NotDboi; }
-            set { playerInfo.NotDboi = value; _repository.Save(playerInfo); }
+            set { playerInfo.NotDboi = value; repository.Save(playerInfo); }
         }
         public uint NotScientist
         {
             get { return playerInfo.NotScientist; }
-            set { playerInfo.NotScientist = value; _repository.Save(playerInfo); }
+            set { playerInfo.NotScientist = value; repository.Save(playerInfo); }
         }
         public uint NotPC
         {
             get { return playerInfo.NotPC; }
-            set { playerInfo.NotPC = value; _repository.Save(playerInfo); }
+            set { playerInfo.NotPC = value; repository.Save(playerInfo); }
         }
 
         //Internal Role ID
@@ -91,13 +95,15 @@ namespace SCPSLEnforcedRNG
 
         public PlayerInfo(Player playerPtr, string playerId)
         {
-            playerInfo = _repository.FindByPlayerID(playerId);
+            playerInfo = repository.FindByPlayerID(playerId);
             if(playerInfo == null)
             {
-                playerInfo = _repository.Insert(new PlayerInfoDB() 
+                playerInfo = repository.Insert(new PlayerInfoDB() 
                 {
-                    GameIdentifier = playerId
+                    GameIdentifier = playerId,
+                    Name = playerPtr.NickName
                 });
+                //repository.Save(playerInfo);
                 DebugTranslator.Console("Player not found in Database", 1);
             }
             else
@@ -109,11 +115,12 @@ namespace SCPSLEnforcedRNG
             _playerCount++;
             roundRole = -1;
             DebugTranslator.Console("Player Registered on Index " + index);
+            DebugTranslator.Console(Index.ToString() + " | " + PlayerId + " | " + PlayerPtr.NickName);
         }
-        ~PlayerInfo()
+        /*~PlayerInfo()
         {
             _playerCount--;
-        }
+        }*/
         public string PrintInfo()
         {
             string info =
@@ -141,7 +148,7 @@ namespace SCPSLEnforcedRNG
         }
         public void SavePlayerToDB()
         {
-            _repository.Save(playerInfo);
+            repository.Save(playerInfo);
         }
     }
 }
