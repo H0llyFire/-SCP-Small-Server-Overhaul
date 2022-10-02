@@ -28,7 +28,7 @@ namespace SCPSLEnforcedRNG
         public CommandResult Execute(CommandContext context)
         {
             var result = new CommandResult();
-            result.Message = "\n[EnforcedRNG]: Time Remaining: " + (PluginClass.respawnTimer-Timing.LocalTime);
+            result.Message = DebugTranslator.TranslatePrefix("Time Remaining: " + (PluginClass.respawnTimer-Timing.LocalTime));
             result.State = CommandResultState.Ok;
             return result;
         }

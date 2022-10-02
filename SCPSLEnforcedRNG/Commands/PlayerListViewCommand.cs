@@ -22,7 +22,7 @@ namespace SCPSLEnforcedRNG
             var result = new CommandResult();
             string tempText = "";
             foreach (var player in PluginClass.playerList)
-                tempText += player.playerPtr.NickName + " " + player.id + " => " + player.SCPcount + "-" + player.GurdCount + "-" + player.DBoiCount + "-" + player.ScientisCount +"\n";
+                tempText += player.PlayerPtr.NickName + " " + player.PlayerId + " => " + player.NotSCP + "-" + player.NotGuard + "-" + player.NotDboi + "-" + player.NotScientist +"\n";
 
             result.Message = tempText;
             result.State = CommandResultState.Ok;

@@ -13,61 +13,11 @@ namespace SCPSLEnforcedRNG
     //Make preffered role system
     //4th respawn Zetta Wave?
 
-    public class PlayerInfo
-    {
-        private static int _playerCount = 0;
-
-        public Player playerPtr;
-        public string id;
-        public int index;
-
-        //Change count to how many times wasn't a class
-        public uint SCPcount      = 0;
-        public uint GurdCount     = 0;
-        public uint DBoiCount     = 0;
-        public uint ScientisCount = 0;
-        public uint PCCount       = 0;
-
-        //Internal Role ID
-        //0 - SCP
-        //1 - PC
-        //2 - Guard
-        //3 - D-Class
-        //4 - Scientist
-        public ushort prefferedRole = 0;
-        public short roundRole = -1;
-        public PlayerInfo(Player playerPtr, string playerId)
-        {
-            this.playerPtr = playerPtr;
-            this.id = playerId;
-            this.index = _playerCount;
-            _playerCount++;
-
-            if (PluginClass.playerList.Count == 0) return;
-
-            foreach (var player in PluginClass.playerList)
-            {
-                if (player.SCPcount      > SCPcount)      SCPcount      = player.SCPcount;
-                if (player.DBoiCount     > DBoiCount)     DBoiCount     = player.DBoiCount;
-                if (player.ScientisCount > ScientisCount) ScientisCount = player.ScientisCount;
-                if (player.GurdCount     > GurdCount)     GurdCount     = player.GurdCount;
-                if (player.PCCount       > PCCount)       PCCount       = player.PCCount;
-            }
-        }
-        public string PrintInfo()
-        {
-            string info = "\n" +
-                "[EnforcedRNG]: Player " + playerPtr.NickName + " was\n" +
-                "[EnforcedRNG]: SCP " + SCPcount + " times\n" +
-                "[EnforcedRNG]: D-Boi " + DBoiCount + " times\n" +
-                "[EnforcedRNG]: Scientist " + ScientisCount + " times\n" +
-                "[EnforcedRNG]: Guard " + GurdCount + " times.\n" +
-                "[EnforcedRNG]: PC " + PCCount + " times.";
-
-            Logger.Get.Info(info);
-            return info;
-        }
-    }
+    //Refinery updates
+    //Heals and damage to players
+    //flashlight no recipe
+    //
+    
 
     [PluginInformation(
         Name = "EnforcedRNG", //The Name of Your Plugin
@@ -77,7 +27,7 @@ namespace SCPSLEnforcedRNG
         SynapseMajor = 2, //The Synapse Version for which this Plugin was created for (SynapseMajor.SynapseMinor.SynapsePatch => 2.7.0)
         SynapseMinor = 10,
         SynapsePatch = 1,
-        Version = "v.1.0.0" //The Current Version of your Plugin
+        Version = "v.1.1.1" //The Current Version of your Plugin
         )]
     public class PluginClass : AbstractPlugin
     {
@@ -88,6 +38,8 @@ namespace SCPSLEnforcedRNG
 
         public static float respawnTimer = 0;
         public static List<PlayerInfo> playerList = new();
+        public static float roundStartTime;
+
         private List<CoroutineHandle> RoundCoroutines = new List<CoroutineHandle>();
         private int LastGeneratorCheck = 0;
         private bool LightsOutMode;
@@ -100,10 +52,21 @@ namespace SCPSLEnforcedRNG
                 float time = UnityEngine.Random.Range(ServerConfigs.respawnTime - ServerConfigs.respawnTimeRange, ServerConfigs.respawnTime + ServerConfigs.respawnTimeRange);
                 respawnTimer = Timing.LocalTime + time;
 
+                bool isChaos = UnityEngine.Random.Range(0f, 1f) + ServerConfigs.chaosChance > 1f;
+
                 yield return Timing.WaitForSeconds(time-20f);
-                TurnSpectatorsToTutorial();
-                yield return Timing.WaitForSeconds(20f);
-                ForceRespawns();
+                if (!Map.Get.Nuke.Detonated) 
+                    TurnSpectatorsToTutorial();
+
+                yield return Timing.WaitForSeconds(10f);
+                if ((!Map.Get.Nuke.Detonated) && GetRoleAmount(14)>0) 
+                    Round.Get.SpawnVehicle(isChaos);
+                else TurnTutorialToSpectators();
+
+                yield return Timing.WaitForSeconds(10f);
+                if (!Map.Get.Nuke.Detonated) 
+                    Round.Get.MtfRespawn(isChaos);
+                else TurnTutorialToSpectators();
             }
         }
 
@@ -111,16 +74,19 @@ namespace SCPSLEnforcedRNG
         {
             SynapseController.Server.Events.Round.RoundStartEvent += OnRoundStart;
             SynapseController.Server.Events.Player.PlayerJoinEvent += OnPlayerJoin;
+            SynapseController.Server.Events.Player.PlayerLeaveEvent += OnPlayerLeave;
             SynapseController.Server.Events.Round.TeamRespawnEvent += OnTeamRespawn;
             SynapseController.Server.Events.Player.PlayerGeneratorInteractEvent += OnGeneratorInteract;
 
-            Logger.Get.Info("\n[EnforcedRNG]: PLUGIN LOADED SUCCESSFULLY");
+
+            DebugTranslator.Console("PLUGIN LOADED SUCCESSFULLY", 0, true);
         }
 
         public void OnRoundStart()
         {
             LastGeneratorCheck = 0;
             LightsOutMode = ServerConfigs.LightsOutMode;
+            roundStartTime = Timing.LocalTime;
             ResetRoles();
             if (RoundCoroutines.Count > 0) foreach (var coroutine in RoundCoroutines) Timing.KillCoroutines(coroutine);
 
@@ -130,52 +96,58 @@ namespace SCPSLEnforcedRNG
 
             RoundCoroutines.Add(Timing.RunCoroutine(RoundRespawnTimer()));
 
-            Logger.Get.Info("\n[EnforcedRNG]: ROUND STARTED");
+            DebugTranslator.Console("ROUND STARTED", 0, true);
         }
         public void OnPlayerJoin(PlayerJoinEventArgs args)
         {
-            Logger.Get.Info("\n" +
-                "[EnforcedRNG]: Player Joined.\n" +
-                "[EnforcedRNG]: PlayerID: " + args.Player.PlayerId + "\n" +
-                "[EnforcedRNG]: SteamID: " + args.Player.UserId);
-
-            bool isInList = false;
-            int tempIndex = 0;
-            foreach (var playerInfo in playerList)
+            Timing.CallDelayed(2f, () => 
             {
-                if (playerInfo.id == args.Player.UserId)
+                DebugTranslator.Console(playerList.Count.ToString());
+
+                playerList.Add(new PlayerInfo(args.Player, args.Player.UserId));
+
+                DebugTranslator.Console(
+                    "Player Joined.\n" +
+                    "PlayerID: " + args.Player.PlayerId + "\n" +
+                    "SteamID: " + args.Player.UserId
+                    , 0, true);
+
+                playerList[playerList.Count-1].PrintInfo();
+            });
+        }
+        public void OnPlayerLeave(PlayerLeaveEventArgs args)
+        {
+
+            foreach (var player in playerList)
+                if (player.PlayerId == args.Player.UserId)
                 {
-                    isInList = true;
+                    playerList.Remove(player);
                     break;
                 }
-                tempIndex++;
-            }
-            if (isInList) 
-                playerList[tempIndex].playerPtr = args.Player;
-            else 
-                playerList.Add(new PlayerInfo(args.Player, args.Player.UserId));
-            playerList[tempIndex].PrintInfo();
+            DebugTranslator.Console("Player " + args.Player.NickName + " has left the server. Players Left: " + playerList.Count, 0, true);
         }
         public void OnTeamRespawn(TeamRespawnEventArgs args)
         {
             args.Players.Clear();
             foreach(var player in playerList)
             {
-                if(player.playerPtr.RoleID==14)
+                if(player.PlayerPtr.RoleID==14)
                 {
-                    args.Players.Add(player.playerPtr);
+                    args.Players.Add(player.PlayerPtr);
                 }
             }
-
-            Logger.Get.Info("\n" +
-                "[EnforcedRNG]: Spawned team: " + args.TeamID + "\n" +
-                "[EnforcedRNG]: Spawned player amount: " + args.Players.Count);
+            if (args.Players.Count == 0) { DebugTranslator.Console("0 Players Waiting for respawn"); return; }
 
             if (CheckGeneratorsOvercharge() == 3 && args.Players.Count > 0 && args.TeamID == 2)
             {
                 Map.Get.Cassie("ATTENTION . ALL SECURITY PERSONNEL . CHAOS .g3 INSURGENCY HASENTERED . LETHAL FORCE .g4 AUTHORIZED");
                 Map.Get.SendBroadcast(7, "Chaos Entered Facility");
             }
+
+
+            DebugTranslator.Console(
+                "Spawned team: " + args.TeamID + "\n" +
+                "Spawned player amount: " + args.Players.Count);
         }
         public void OnGeneratorInteract(PlayerGeneratorInteractEventArgs args)
         {
@@ -190,6 +162,7 @@ namespace SCPSLEnforcedRNG
 
         private int LightsOut(int amount)
         {
+            OfflineRooms.Clear();
             string output = "\n";
             if (LightsOutMode)
             {
@@ -199,7 +172,7 @@ namespace SCPSLEnforcedRNG
                     room.LightController.NetworkLightsEnabled = false;
                     OfflineRooms.Add(room);
                 }
-                Logger.Get.Info("\n[EnforcedRNG]: " + OfflineRooms.Count + " Lights turned Off");
+                DebugTranslator.Console(OfflineRooms.Count + " Lights turned Off");
                 return Map.Get.Rooms.Count;
             }
             else
@@ -221,6 +194,7 @@ namespace SCPSLEnforcedRNG
                     {
                         FilteredRoomList.Add(room);
                     }
+                    
                 }
 
                 for (int i = 0; i < (amount<FilteredRoomList.Count?amount:FilteredRoomList.Count); i++)
@@ -230,7 +204,7 @@ namespace SCPSLEnforcedRNG
                     OfflineRooms.Add(FilteredRoomList[x]);
                     FilteredRoomList.RemoveAt(x);
                 }
-                Logger.Get.Info("\n[EnforcedRNG]: " + OfflineRooms.Count + " Lights turned Off");
+                DebugTranslator.Console(OfflineRooms.Count + " Lights turned Off");
                 return amount;
             }
         }
@@ -238,16 +212,16 @@ namespace SCPSLEnforcedRNG
         {
             for (int i = 0; i < (amount<OfflineRooms.Count?amount:OfflineRooms.Count); i++)
             {
-                int x = UnityEngine.Random.Range(0, OfflineRooms.Count);
+                int x = UnityEngine.Random.Range(0, OfflineRooms.Count-1);
                 OfflineRooms[x].LightController.NetworkLightsEnabled = true;
                 OfflineRooms.RemoveAt(x);
             }
-            Logger.Get.Info("\n[EnforcedRNG]: " + amount + " Lights turned On");
+            DebugTranslator.Console(amount + " Lights turned On");
         }
 
         private int CheckGeneratorsOvercharge()
         {
-            if (LastGeneratorCheck == 3) return 3;
+            if (LastGeneratorCheck == -1) return 3;
             int countEngaged = 0;
             int countActive = 0;
             foreach(var generator in Map.Get.Generators)
@@ -259,14 +233,20 @@ namespace SCPSLEnforcedRNG
                     Timing.CallDelayed(generator.Time + 2f, () => CheckGeneratorsOvercharge()); 
                 }
             }
-            if (countEngaged > LastGeneratorCheck) ModifyMapOnGenerators(countEngaged);
+            ModifyMapOnGenerators();
     
             LastGeneratorCheck = countEngaged;
-            Logger.Get.Info("\n[EnforcedRNG]: Engaged Generators: " + countEngaged + "\n[EnforcedRNG]: Active Generators: " + countActive);
+            DebugTranslator.Console("Engaged Generators: " + countEngaged + 
+                "\nActive Generators: " + countActive);
             return countEngaged;
         }
-        private void ModifyMapOnGenerators(int generatorCount)
+        private void ModifyMapOnGenerators()
         {
+            if (LastGeneratorCheck == -1) return;
+
+            int generatorCount = 0;
+            foreach (var generator in Map.Get.Generators)
+                if (generator.Active) generatorCount++;
             switch(generatorCount)
             {
                 case 3:
@@ -274,14 +254,15 @@ namespace SCPSLEnforcedRNG
                     Map.Get.SendBroadcast(10, "Security Systems ON-LINE");
                     Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
                     TurnOnLights(ServerConfigs.StartingLightsOff);
+                    LastGeneratorCheck = -1;
                     break;
                 case 2:
                     Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
-                    TurnOnLights(ServerConfigs.StartingLightsOff / 3);
+                    TurnOnLights(ServerConfigs.GeneratorLightsOn);
                     break;
                 case 1:
                     Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
-                    TurnOnLights(ServerConfigs.StartingLightsOff/3);
+                    TurnOnLights(ServerConfigs.GeneratorLightsOn);
                     break;
                 default:
                     break;
@@ -290,19 +271,22 @@ namespace SCPSLEnforcedRNG
         private void TurnSpectatorsToTutorial()
         {
             foreach(var player in playerList)
-            {
-                if(player.playerPtr.RoleID==2)
-                {
-                    player.playerPtr.RoleID = 14;
-                }
-            }
+                if(player.PlayerPtr.RoleID==2)
+                    player.PlayerPtr.RoleID = 14;
         }
-        private void ForceRespawns()
+        private void TurnTutorialToSpectators()
         {
-            if (UnityEngine.Random.Range(0f, 1f) + ServerConfigs.chaosChance > 1f)
-                Round.Get.MtfRespawn(true);
-            else
-                Round.Get.MtfRespawn(false);
+            foreach (var player in playerList)
+                if (player.PlayerPtr.RoleID == 14)
+                    player.PlayerPtr.RoleID = 2;
+        }
+        public int GetRoleAmount(int role)
+        {
+            int count = 0;
+            foreach(var player in playerList)
+                if(player.PlayerPtr.RoleID==role)
+                    count++;
+            return count;
         }
         private void ResetRoles()
         { 
@@ -331,6 +315,9 @@ namespace SCPSLEnforcedRNG
          * 15 Facility Guard
          * 16 SCP 939-53        - Doggo 1
          * 17 SCP 939-89        - Doggo 2
+         * 18 Chaos Insurgency  - Rifleman
+         * 19 Chaos Insurgency  - Repressor
+         * 20 Chaos Insurgency  - Marauder
          * 
          * SCPS Only
          *  0  SCP 173           - Peanut
@@ -349,10 +336,18 @@ namespace SCPSLEnforcedRNG
 
         private void AssignRoles(int playerCount)
         {
+            string tempOut = "kys:\n";
+            /*foreach (PlayerInfo player in playerList)
+            { 
+                tempOut += player.PlayerPtr.NickName + " | ";
+            }*/
+            DebugTranslator.Console(tempOut);
+
             string roles = ServerConfigs.RolePicks.Substring(0, playerCount);
             char[] characters = roles.ToCharArray();
             Array.Sort(characters);
             roles = new String(characters);
+            DebugTranslator.Console(roles);
             for(int i = 0; i < playerCount; i++)
             {
                 switch(roles[0])
@@ -381,146 +376,151 @@ namespace SCPSLEnforcedRNG
         }
         private void AssignSCP()
         {
-            uint tempVal = uint.MaxValue;
-            List<int> tempPlayerIndexList = new();
+            uint tempVal = 0;
+            List<PlayerInfo> tempPlayerList = new();
             foreach (var player in playerList)
             {
-                if (tempVal > player.SCPcount)
+                if (tempVal < player.NotSCP)
                 {
-                    tempVal = player.SCPcount;
-                    tempPlayerIndexList.Clear();
+                    tempVal = player.NotSCP;
+                    tempPlayerList.Clear();
                 }
-                if (tempVal == player.SCPcount) tempPlayerIndexList.Add(player.index);
+                if (player.roundRole == -1 && tempVal == player.NotSCP) tempPlayerList.Add(player);
             }
 
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerIndexList.Count);
-            int selectedIndex = tempPlayerIndexList[tempIndex];
-            playerList[selectedIndex].roundRole = 0;
+            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
+            var selectedPlayer = tempPlayerList[tempIndex];
+            selectedPlayer.roundRole = 0;
 
             int[] scps = { 0, 3, 5, 16, 17, 0, 3, 5, 16, 17, 0, 3, 5, 16, 17, 0, 3, 5, 16, 17, 0, 3, 5, 16, 17, 0, 3, 5, 16, 17 };
             int tempIndexScp = UnityEngine.Random.Range(0, scps.Length);
-            playerList[selectedIndex].playerPtr.RoleID = scps[tempIndexScp];
-            playerList[selectedIndex].SCPcount += 1;
+            selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp];
+            selectedPlayer.AddUpCounts();
 
             string tempText = "";
-            foreach (var playerIndex in tempPlayerIndexList) tempText += playerList[playerIndex].playerPtr.NickName + ",";
+            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
 
-            Logger.Get.Info("\n" +
-                "[EnforcedRNG]: " + tempText + " were deemed WORTHY\n" +
-                "[EnforcedRNG]: Player " + playerList[selectedIndex].playerPtr.NickName + "\n" +
-                "[EnforcedRNG]: Rolled SCP with " + ((1.0f / tempPlayerIndexList.Count) * 100.0f) + "% Probability");
+            DebugTranslator.Console(
+                tempText + " were deemed WORTHY\n" +
+                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
+                "Rolled SCP with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
         }
         private void AssignPC()
         {
-            uint tempVal = uint.MaxValue;
-            List<int> tempPlayerIndexList = new();
+            uint tempVal = 0;
+            List<PlayerInfo> tempPlayerList = new();
             foreach (var player in playerList)
             {
-                if (tempVal > player.PCCount)
+                if (player.roundRole == -1 && tempVal < player.NotPC)
                 {
-                    tempVal = player.PCCount;
-                    tempPlayerIndexList.Clear();
+                    tempVal = player.NotPC;
+                    tempPlayerList.Clear();
                 }
-                if (tempVal == player.PCCount) tempPlayerIndexList.Add(player.index);
+                if (player.roundRole == -1 && tempVal == player.NotPC) tempPlayerList.Add(player);
             }
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerIndexList.Count);
-            int selectedIndex = tempPlayerIndexList[tempIndex];
+            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
+            var selectedPlayer = tempPlayerList[tempIndex];
 
-            playerList[selectedIndex].roundRole = 4;
-            playerList[selectedIndex].playerPtr.RoleID = 7;
-            playerList[selectedIndex].PCCount += 1;
+            selectedPlayer.roundRole = 1;
+            selectedPlayer.PlayerPtr.RoleID = 7;
+            selectedPlayer.AddUpCounts();
 
             string tempText = "";
-            foreach (var playerIndex in tempPlayerIndexList) tempText += playerList[playerIndex].playerPtr.NickName + ",";
+            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
 
-            Logger.Get.Info("\n" +
-                "[EnforcedRNG]: " + tempText + " were deemed WORTHY\n" +
-                "[EnforcedRNG]: Player " + playerList[selectedIndex].playerPtr.NickName + "\n" +
-                "[EnforcedRNG]: Rolled PC with " + ((1.0f / tempPlayerIndexList.Count) * 100.0f) + "% Probability");
+            DebugTranslator.Console(
+                tempText + " were deemed WORTHY\n" +
+                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
+                "Rolled PC with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
         }
         private void AssignGuard()
         {
-            uint tempVal = uint.MaxValue;
-            List<int> tempPlayerIndexList = new();
+            uint tempVal = 0;
+            List<PlayerInfo> tempPlayerList = new();
             foreach (var player in playerList)
             {
-                if (player.roundRole == -1 && tempVal > player.GurdCount)
+                if (player.roundRole == -1 && tempVal < player.NotGuard)
                 {
-                    tempVal = player.GurdCount;
-                    tempPlayerIndexList.Clear();
+                    tempVal = player.NotGuard;
+                    tempPlayerList.Clear();
                 }
-                if (player.roundRole==-1 && tempVal==player.GurdCount) tempPlayerIndexList.Add(player.index);
+                if (player.roundRole==-1 && tempVal==player.NotGuard) tempPlayerList.Add(player);
             }
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerIndexList.Count);
-            int selectedIndex = tempPlayerIndexList[tempIndex];
+            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
+            var selectedPlayer = tempPlayerList[tempIndex];
 
-            playerList[selectedIndex].roundRole = 1;
-            playerList[selectedIndex].playerPtr.RoleID = 15;
-            playerList[selectedIndex].GurdCount += 1;
+            selectedPlayer.roundRole = 2;
+            selectedPlayer.PlayerPtr.RoleID = 15;
+            selectedPlayer.AddUpCounts();
 
             string tempText = "";
-            foreach (var playerIndex in tempPlayerIndexList) tempText += playerList[playerIndex].playerPtr.NickName + ",";
+            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
 
-            Logger.Get.Info("\n" +
-                "[EnforcedRNG]: " + tempText + " were deemed WORTHY\n" +
-                "[EnforcedRNG]: Player " + playerList[selectedIndex].playerPtr.NickName + "\n" +
-                "[EnforcedRNG]: Rolled Guard with " + ((1.0f / tempPlayerIndexList.Count) * 100.0f) + "% Probability");
+            DebugTranslator.Console(
+                tempText + " were deemed WORTHY\n" +
+                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
+                "Rolled Guard with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
         }
         private void AssignDBoi()
         {
-            uint tempVal = uint.MaxValue;
-            List<int> tempPlayerIndexList = new();
+            uint tempVal = 0;
+            List<PlayerInfo> tempPlayerList = new();
             foreach (var player in playerList)
             {
-                if (player.roundRole == -1 && tempVal > player.DBoiCount)
+                //DebugTranslator.Console("Check " + player.Index);
+                if (player.roundRole == -1 && tempVal < player.NotDboi)
                 {
-                    tempVal = player.DBoiCount;
-                    tempPlayerIndexList.Clear();
+                    tempVal = player.NotDboi;
+                    tempPlayerList.Clear();
                 }
-                if (player.roundRole == -1 && tempVal == player.DBoiCount) tempPlayerIndexList.Add(player.index);
+                if (player.roundRole == -1 && tempVal == player.NotDboi) tempPlayerList.Add(player);
             }
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerIndexList.Count);
-            int selectedIndex = tempPlayerIndexList[tempIndex];
+            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
+            var selectedPlayer = tempPlayerList[tempIndex];
 
-            playerList[selectedIndex].roundRole = 2;
-            playerList[selectedIndex].playerPtr.RoleID = 1;
-            playerList[selectedIndex].DBoiCount += 1;
+            selectedPlayer.roundRole = 3;
+            selectedPlayer.PlayerPtr.RoleID = 1;
+            selectedPlayer.AddUpCounts();
+            selectedPlayer.PlayerPtr.Inventory.AddItem(15);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(35);
 
             string tempText = "";
-            foreach (var playerIndex in tempPlayerIndexList) tempText += playerList[playerIndex].playerPtr.NickName + ",";
+            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
 
-            Logger.Get.Info("\n" +
-                "[EnforcedRNG]: " + tempText + " were deemed WORTHY\n" +
-                "[EnforcedRNG]: Player " + playerList[selectedIndex].playerPtr.NickName + "\n" +
-                "[EnforcedRNG]: Rolled DBoi with " + ((1.0f / tempPlayerIndexList.Count) * 100.0f) + "% Probability");
+            DebugTranslator.Console(
+                tempText + " were deemed WORTHY\n" +
+                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
+                "Rolled DBoi with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
         }
         private void AssignScientist()
         {
-            uint tempVal = uint.MaxValue;
-            List<int> tempPlayerIndexList = new();
+            uint tempVal = 0;
+            List<PlayerInfo> tempPlayerList = new();
             foreach (var player in playerList)
             {
-                if (player.roundRole == -1 && tempVal > player.ScientisCount)
+                if (player.roundRole == -1 && tempVal < player.NotScientist)
                 {
-                    tempVal = player.ScientisCount;
-                    tempPlayerIndexList.Clear();
+                    tempVal = player.NotScientist;
+                    tempPlayerList.Clear();
                 }
-                if (player.roundRole == -1 && tempVal == player.ScientisCount) tempPlayerIndexList.Add(player.index);
+                if (player.roundRole == -1 && tempVal == player.NotScientist) tempPlayerList.Add(player);
             }
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerIndexList.Count);
-            int selectedIndex = tempPlayerIndexList[tempIndex];
+            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
+            var selectedPlayer = tempPlayerList[tempIndex];
 
-            playerList[selectedIndex].roundRole = 3;
-            playerList[selectedIndex].playerPtr.RoleID = 6;
-            playerList[selectedIndex].ScientisCount += 1;
+            selectedPlayer.roundRole = 4;
+            selectedPlayer.PlayerPtr.RoleID = 6;
+            selectedPlayer.AddUpCounts();
+            selectedPlayer.PlayerPtr.Inventory.AddItem(15);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(35);
 
             string tempText = "";
-            foreach (var playerIndex in tempPlayerIndexList) tempText += playerList[playerIndex].playerPtr.NickName + ",";
+            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
 
-            Logger.Get.Info("\n" +
-                "[EnforcedRNG]: " + tempText + " were deemed WORTHY\n" +
-                "[EnforcedRNG]: Player " + playerList[selectedIndex].playerPtr.NickName + "\n" +
-                "[EnforcedRNG]: Rolled Scientist with " + ((1.0f / tempPlayerIndexList.Count) * 100.0f) + "% Probability");
+            DebugTranslator.Console(
+                tempText + " were deemed WORTHY\n" +
+                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
+                "Rolled Scientist with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
         }
     } 
 }

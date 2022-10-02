@@ -30,121 +30,155 @@ namespace SCPSLEnforcedRNG
             string tempResultText = "";
             if (context.Arguments.Count == 0)
             {
-                tempResultText = "\n[EnforcedRNG]: Changable configs available: \n" +
-                    "[EnforcedRNG]: RolePicks {string}\n" +
-                    "[EnforcedRNG]: -Role order that will be picked on round start\n" +
-                    "[EnforcedRNG]: - 0 => SCP\n" +
-                    "[EnforcedRNG]: - 1 => PC\n" +
-                    "[EnforcedRNG]: - 2 => Guard\n" +
-                    "[EnforcedRNG]: - 3 => D-Class\n" +
-                    "[EnforcedRNG]: - 4 => Scientist\n" +
-                    "[EnforcedRNG]: ChaosChance {float}\n" +
-                    "[EnforcedRNG]: - The chance from 0 to 1 for chaos to spawn instead of MTF\n" +
-                    "[EnforcedRNG]: RespawnTime {int}\n" +
-                    "[EnforcedRNG]: - How long does it take for respawns to occur\n" +
-                    "[EnforcedRNG]: RespawnTimeRange {int}\n" +
-                    "[EnforcedRNG]: - The Max time added or removed from the base respawn for a random effect\n" +
-                    "[EnforcedRNG]: LightsOutMode {bool}\n" +
-                    "[EnforcedRNG]: - If all lights should be off on round start\n" +
-                    "[EnforcedRNG]: StartingLightsOff {int}\n" +
-                    "[EnforcedRNG]: - Amount of Lights to be set off at RoundStart. Should be dividable by 3 {Otherwise Undefined Behavior}";
+                tempResultText = 
+                    "Changable configs available: \n" +
+
+                    "ShowDebugInConsole {bool}\n" +
+                    "-Whether the Console should show Debug info\n" +
+
+                    "RolePicks {string}\n" +
+                    "-Role order that will be picked on round start\n" +
+                    "- 0 => SCP\n" +
+                    "- 1 => PC\n" +
+                    "- 2 => Guard\n" +
+                    "- 3 => D-Class\n" +
+                    "- 4 => Scientist\n" +
+
+                    "ChaosChance {float}\n" +
+                    "- The chance from 0 to 1 for chaos to spawn instead of MTF\n" +
+
+                    "RespawnTime {int}\n" +
+                    "- How long does it take for respawns to occur\n" +
+
+                    "RespawnTimeRange {int}\n" +
+                    "- The Max time added or removed from the base respawn for a random effect\n" +
+
+                    "LightsOutMode {bool}\n" +
+                    "- If all lights should be off on round start\n" +
+
+                    "StartingLightsOff {int}\n" +
+                    "- Amount of Lights to be set off at RoundStart\n" +
+
+                    "GeneratorLightsOn {int}\n" +
+                    "- Amount of Lights that get switched on when a generator is turned on";
             }
             else
             {
                 switch(context.Arguments.ElementAt(0))
                 {
                     case "RolePicks":
-                        if (context.Arguments.Count == 1) tempResultText = "\n[EnforcedRNG]: " + PluginClass.ServerConfigs.RolePicks;
+                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.RolePicks;
                         else
                         {
                             IEnumerable<char> allowedInputs = "01234";
                             if(context.Arguments.ElementAt(1).All(allowedInputs.Contains)) PluginClass.ServerConfigs.RolePicks = context.Arguments.ElementAt(1);
-                            else tempResultText = "\n[EnforcedRNG]: Invalid Value";
+                            else tempResultText = "Invalid Value";
                         }
                         break;
+
                     case "ChaosChance":
-                        if (context.Arguments.Count == 1) tempResultText = "\n[EnforcedRNG]: " + PluginClass.ServerConfigs.chaosChance.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.chaosChance.ToString();
                         else
                         {
                             float newValue;
                             try { newValue = float.Parse(context.Arguments.ElementAt(1)); }
                             catch
                             {
-                                tempResultText = "\n[EnforcedRNG]: Invalid Value";
+                                tempResultText = "Invalid Value";
                                 break;
                             }
                             if (newValue >= 0f && newValue <= 1f) PluginClass.ServerConfigs.chaosChance = newValue;
-                            else tempResultText = "\n[EnforcedRNG]: Invalid Value";
+                            else tempResultText = "Invalid Value";
                         }
                         break;
+
                     case "RespawnTime":
-                        if (context.Arguments.Count == 1) tempResultText = "\n[EnforcedRNG]: " + PluginClass.ServerConfigs.respawnTime.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.respawnTime.ToString();
                         else
                         {
                             int newValue;
                             try { newValue = int.Parse(context.Arguments.ElementAt(1)); }
                             catch
                             {
-                                tempResultText = "\n[EnforcedRNG]: Invalid Value";
+                                tempResultText = "Invalid Value";
                                 break;
                             }
                             PluginClass.ServerConfigs.respawnTime = newValue;
                         }
                         break;
+
                     case "RespawnTimeRange":
-                        if (context.Arguments.Count == 1) tempResultText = "\n[EnforcedRNG]: " + PluginClass.ServerConfigs.respawnTimeRange.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.respawnTimeRange.ToString();
                         else
                         {
                             int newValue;
                             try { newValue = int.Parse(context.Arguments.ElementAt(1)); }
                             catch
                             {
-                                tempResultText = "\n[EnforcedRNG]: Invalid Value";
+                                tempResultText = "Invalid Value";
                                 break;
                             }
                             PluginClass.ServerConfigs.respawnTimeRange = newValue;
                         }
                         break;
+
                     case "LightsOutMode":
-                        if (context.Arguments.Count == 1) tempResultText = "\n[EnforcedRNG]: " + PluginClass.ServerConfigs.LightsOutMode.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.LightsOutMode.ToString();
                         else
                         {
                             bool newValue;
                             try { newValue = bool.Parse(context.Arguments.ElementAt(1)); }
                             catch
                             {
-                                tempResultText = "\n[EnforcedRNG]: Invalid Value";
+                                tempResultText = "Invalid Value";
                                 break;
                             }
                             PluginClass.ServerConfigs.LightsOutMode = newValue;
                         }
                         break;
+
                     case "StartingLightsOff":
-                        if (context.Arguments.Count == 1) tempResultText = "\n[EnforcedRNG]: " + PluginClass.ServerConfigs.StartingLightsOff.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.StartingLightsOff.ToString();
                         else
                         {
                             int newValue;
                             try { newValue = int.Parse(context.Arguments.ElementAt(1)); }
                             catch
                             {
-                                tempResultText = "\n[EnforcedRNG]: Invalid Value";
+                                tempResultText = "Invalid Value";
                                 break;
                             }
                             PluginClass.ServerConfigs.StartingLightsOff = newValue;
                         }
                         break;
+
+                    case "GeneratorLightsOn":
+                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.GeneratorLightsOn.ToString();
+                        else
+                        {
+                            int newValue;
+                            try { newValue = int.Parse(context.Arguments.ElementAt(1)); }
+                            catch
+                            {
+                                tempResultText = "Invalid Value";
+                                break;
+                            }
+                            PluginClass.ServerConfigs.GeneratorLightsOn = newValue;
+                        }
+                        break;
+
                     default:
-                        tempResultText = "\n[EnforcedRNG]: Invalid Option.";
+                        tempResultText = "Invalid Option.";
                         break;
                 }
             }
 
-            if (tempResultText == "") tempResultText = "[EnforcedRNG]: Value Succesfully Changed";
+            if (tempResultText == "") tempResultText = "Value Succesfully Changed";
 
-            tempResultText += "\n[EnforcedRNG]: Args: " + context.Arguments.Count;
+            tempResultText += "\nArgs: " + context.Arguments.Count;
             
             var result = new CommandResult();
-            result.Message = tempResultText;
+            result.Message = DebugTranslator.TranslatePrefix(tempResultText);
             result.State = CommandResultState.Ok;
             return result;
         }

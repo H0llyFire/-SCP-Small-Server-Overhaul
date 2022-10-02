@@ -4,6 +4,7 @@ namespace SCPSLEnforcedRNG
 { 
     public class PluginConfig : AbstractConfigSection
     {
+        public bool ShowDebugInConsole { get; set; } = true;
         public string RolePicks { get; set; } = "303242334312303432";
 
         public float chaosChance { get; set; } = 0.25f;
@@ -15,5 +16,7 @@ namespace SCPSLEnforcedRNG
         public bool LightsOutMode { get; set; } = false;
 
         public int StartingLightsOff { get; set; } = 12;
+
+        public int GeneratorLightsOn { get; set; } = 6;
     }
 }
