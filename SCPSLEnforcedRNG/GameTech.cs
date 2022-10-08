@@ -248,9 +248,12 @@ namespace SCPSLEnforcedRNG
         public static void AssignRoles(int playerCount)
         {
             string tempOut = "kys:\n";
+            //DebugTranslator.Console(tempOut);
+            //DebugTranslator.Console(playerCount.ToString());
+            //DebugTranslator.Console(playerList.Count.ToString());
             foreach (PlayerInfo player in playerList)
             {
-                tempOut += player.PlayerPtr.NickName + " | ";
+                tempOut += player.PlayerId + " | ";
             }
             DebugTranslator.Console(tempOut);
 

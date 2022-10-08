@@ -28,7 +28,7 @@ namespace SCPSLEnforcedRNG
         SynapseMajor = 2, //The Synapse Version for which this Plugin was created for (SynapseMajor.SynapseMinor.SynapsePatch => 2.7.0)
         SynapseMinor = 10,
         SynapsePatch = 1,
-        Version = "v.1.1.1" //The Current Version of your Plugin
+        Version = "v.1.1.2" //The Current Version of your Plugin
         )]
     public class PluginClass : AbstractPlugin
     {

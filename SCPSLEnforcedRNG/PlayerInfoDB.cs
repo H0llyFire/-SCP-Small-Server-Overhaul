@@ -12,7 +12,7 @@ namespace SCPSLEnforcedRNG
     {
         public int Id { get; set; }
         public string GameIdentifier { get; set; }
-        //public string Name { get; set; }
+        public string Name { get; set; }
 
         public uint NotSCP { get; set; } = 0;
         public uint NotGuard { get; set; } = 0;
@@ -40,7 +40,7 @@ namespace SCPSLEnforcedRNG
     public class PlayerInfo
     {
         public static PlayerRepository repository = new();
-        private static int _playerCount = 0;
+        public static int playerCount = 0;
 
         public PlayerInfoDB playerInfo;
         private Player playerPtr;
@@ -96,26 +96,27 @@ namespace SCPSLEnforcedRNG
         public PlayerInfo(Player playerPtr, string playerId)
         {
             playerInfo = repository.FindByPlayerID(playerId);
+
             if(playerInfo == null)
             {
                 playerInfo = repository.Insert(new PlayerInfoDB() 
                 {
                     GameIdentifier = playerId,
-                    //Name = playerPtr.NickName
+                    Name = playerPtr.NickName
                 });
                 //repository.Save(playerInfo);
                 DebugTranslator.Console("Player not found in Database", 1);
             }
             else
-            {
                 DebugTranslator.Console("Player found in Database");
-            }
-            this.playerPtr = playerPtr;
-            index = _playerCount;
-            _playerCount++;
+
+            PlayerPtr = playerPtr;
+
+            index = playerCount;
+            playerCount++;
             roundRole = -1;
             DebugTranslator.Console("Player Registered on Index " + index);
-            DebugTranslator.Console(Index.ToString() + " | " + PlayerId + " | " + PlayerPtr.NickName);
+            DebugTranslator.Console(Index.ToString() + " | " + playerInfo.GameIdentifier + " | " + playerInfo.Name);
         }
         /*~PlayerInfo()
         {
