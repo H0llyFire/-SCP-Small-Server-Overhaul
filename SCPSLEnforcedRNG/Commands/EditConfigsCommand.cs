@@ -67,17 +67,17 @@ namespace SCPSLEnforcedRNG
                 switch(context.Arguments.ElementAt(0))
                 {
                     case "RolePicks":
-                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.RolePicks;
+                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.RolePicks;
                         else
                         {
                             IEnumerable<char> allowedInputs = "01234";
-                            if(context.Arguments.ElementAt(1).All(allowedInputs.Contains)) PluginClass.ServerConfigs.RolePicks = context.Arguments.ElementAt(1);
+                            if(context.Arguments.ElementAt(1).All(allowedInputs.Contains)) GameTech.ServerConfigs.RolePicks = context.Arguments.ElementAt(1);
                             else tempResultText = "Invalid Value";
                         }
                         break;
 
                     case "ChaosChance":
-                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.chaosChance.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.chaosChance.ToString();
                         else
                         {
                             float newValue;
@@ -87,13 +87,13 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            if (newValue >= 0f && newValue <= 1f) PluginClass.ServerConfigs.chaosChance = newValue;
+                            if (newValue >= 0f && newValue <= 1f) GameTech.ServerConfigs.chaosChance = newValue;
                             else tempResultText = "Invalid Value";
                         }
                         break;
 
                     case "RespawnTime":
-                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.respawnTime.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.respawnTime.ToString();
                         else
                         {
                             int newValue;
@@ -103,12 +103,12 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            PluginClass.ServerConfigs.respawnTime = newValue;
+                            GameTech.ServerConfigs.respawnTime = newValue;
                         }
                         break;
 
                     case "RespawnTimeRange":
-                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.respawnTimeRange.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.respawnTimeRange.ToString();
                         else
                         {
                             int newValue;
@@ -118,12 +118,12 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            PluginClass.ServerConfigs.respawnTimeRange = newValue;
+                            GameTech.ServerConfigs.respawnTimeRange = newValue;
                         }
                         break;
 
                     case "LightsOutMode":
-                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.LightsOutMode.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.LightsOutMode.ToString();
                         else
                         {
                             bool newValue;
@@ -133,12 +133,12 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            PluginClass.ServerConfigs.LightsOutMode = newValue;
+                            GameTech.ServerConfigs.LightsOutMode = newValue;
                         }
                         break;
 
                     case "StartingLightsOff":
-                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.StartingLightsOff.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.StartingLightsOff.ToString();
                         else
                         {
                             int newValue;
@@ -148,12 +148,12 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            PluginClass.ServerConfigs.StartingLightsOff = newValue;
+                            GameTech.ServerConfigs.StartingLightsOff = newValue;
                         }
                         break;
 
                     case "GeneratorLightsOn":
-                        if (context.Arguments.Count == 1) tempResultText = PluginClass.ServerConfigs.GeneratorLightsOn.ToString();
+                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.GeneratorLightsOn.ToString();
                         else
                         {
                             int newValue;
@@ -163,7 +163,7 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            PluginClass.ServerConfigs.GeneratorLightsOn = newValue;
+                            GameTech.ServerConfigs.GeneratorLightsOn = newValue;
                         }
                         break;
 

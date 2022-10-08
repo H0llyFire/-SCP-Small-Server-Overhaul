@@ -21,7 +21,7 @@ namespace SCPSLEnforcedRNG
         {
             var result = new CommandResult();
             
-            foreach (var player in PluginClass.playerList)
+            foreach (var player in GameTech.playerList)
                 if (player.PlayerId == context.Player.UserId) result.Message = player.PrintInfo();
             result.State = CommandResultState.Ok;
 
