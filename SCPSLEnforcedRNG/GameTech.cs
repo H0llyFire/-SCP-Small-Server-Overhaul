@@ -38,7 +38,7 @@ namespace SCPSLEnforcedRNG
                 bool isChaos = UnityEngine.Random.Range(0f, 1f) + ServerConfigs.chaosChance > 1f;
 
                 yield return Timing.WaitForSeconds(time - 20f);
-                if (!Map.Get.Nuke.Detonated)
+                if (!(Map.Get.Nuke.Detonated||Map.Get.Nuke.Active))
                     TurnSpectatorsToTutorial();
 
                 yield return Timing.WaitForSeconds(10f);
@@ -121,6 +121,7 @@ namespace SCPSLEnforcedRNG
         }
         public static void TurnOnLights(int amount)
         {
+            if (LightsOutMode) return;
             for (int i = 0; i < (amount < OfflineRooms.Count ? amount : OfflineRooms.Count); i++)
             {
                 int x = UnityEngine.Random.Range(0, OfflineRooms.Count - 1);

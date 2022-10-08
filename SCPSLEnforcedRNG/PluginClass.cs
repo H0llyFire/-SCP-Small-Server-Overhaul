@@ -1,9 +1,11 @@
 ﻿using Interactables.Interobjects.DoorUtils;
+using InventorySystem.Items;
 using MapGeneration;
 using MEC;
 using Synapse;
 using Synapse.Api;
 using Synapse.Api.Events.SynapseEventArguments;
+using Synapse.Api.Items;
 using Synapse.Api.Plugin;
 using static System.Net.WebRequestMethods;
 
@@ -38,6 +40,11 @@ namespace SCPSLEnforcedRNG
         public override void Load()
         {
             EventCalls.SetupEvents(ServerConfigs);
+
+            Timing.CallDelayed(3f, () =>
+            {
+                //Map.Get.Scp914.
+            });
 
             DebugTranslator.Console("PLUGIN LOADED SUCCESSFULLY", 0, true);
         }

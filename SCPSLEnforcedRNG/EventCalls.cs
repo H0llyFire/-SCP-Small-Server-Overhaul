@@ -19,13 +19,18 @@ namespace SCPSLEnforcedRNG
             SynapseController.Server.Events.Round.TeamRespawnEvent += OnTeamRespawn;
             SynapseController.Server.Events.Player.PlayerGeneratorInteractEvent += OnGeneratorInteract;
             SynapseController.Server.Events.Player.PlayerDeathEvent += OnPlayerDeath;
+            SynapseController.Server.Events.Player.PlayerEscapesEvent += OnPlayerEscape;
             SynapseController.Server.Events.Round.RoundEndEvent += OnRoundEnd;
             SynapseController.Server.Events.Round.RoundRestartEvent += OnRoundEnd;
-            
+            SynapseController.Server.Events.Player.PlayerRadioInteractEvent += OnRadio;
+            //SynapseController.Server.Events.Scp.ScpAttackEvent
 
             GameTech.ServerConfigs = ServerConfigs;
         }
-
+        public static void OnRadio(PlayerRadioInteractEventArgs args)
+        {
+            args.Radio.Durabillity = 1000;
+        }
         public static void OnRoundStart()
         {
             GameTech.SetupMapStart();
@@ -36,9 +41,9 @@ namespace SCPSLEnforcedRNG
             GameTech.playerList.Clear();
             PlayerInfo.playerCount = 0;
         }
-        public static void OnPlayerDeath(PlayerDeathEventArgs args)
+        public static void OnPlayerEscape(PlayerEscapeEventArgs args)
         {
-            if (args.Victim.RoleType == RoleType.ClassD && GameTech.GetRoleAmount(1) == 1)
+            if (args.IsClassD && GameTech.GetRoleAmount(1) == 1)
                 Timing.CallDelayed(20f, () =>
             {
                 Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Open = true;
@@ -48,6 +53,19 @@ namespace SCPSLEnforcedRNG
                 Map.Get.Cassie("ATTENTION . NO .g1 CLASS D PERSONNEL DETECTED INSIDE .g2 THE FACILITY . ALL .g3 FACILITY GATES HAVE BEEN OPENED . SCIENCE .g4 PERSONNEL SHOULD EVACUATE .g1 IMMEDIATELY");
                 Map.Get.SendBroadcast(10, "All Gates Have Been Opened.");
             });
+        }
+        public static void OnPlayerDeath(PlayerDeathEventArgs args)
+        {
+            if (args.Victim.RoleType == RoleType.ClassD && GameTech.GetRoleAmount(1) == 1)
+                Timing.CallDelayed(20f, () =>
+                {
+                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Open = true;
+                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Locked = true;
+                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Open = true;
+                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Locked = true;
+                    Map.Get.Cassie("ATTENTION . NO .g1 CLASS D PERSONNEL DETECTED INSIDE .g2 THE FACILITY . ALL .g3 FACILITY GATES HAVE BEEN OPENED . SCIENCE .g4 PERSONNEL SHOULD EVACUATE .g1 IMMEDIATELY");
+                    Map.Get.SendBroadcast(10, "All Gates Have Been Opened.");
+                });
         }
         public static void OnPlayerJoin(PlayerJoinEventArgs args)
         {
