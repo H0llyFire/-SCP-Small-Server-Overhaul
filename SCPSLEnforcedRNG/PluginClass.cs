@@ -15,6 +15,9 @@ namespace SCPSLEnforcedRNG
     //New class xd Chaos Guard (chance for a guard to be Chaos with the skin of a guard (amogus)
     //Make preffered role system
     //4th respawn Zetta Wave?
+    //Game stats, advanced debug system
+
+    //SCP Blackout? Open and Lockdown of doors + darkness
 
     //Refinery updates
     //Heals and damage to players
@@ -30,7 +33,7 @@ namespace SCPSLEnforcedRNG
         SynapseMajor = 2, //The Synapse Version for which this Plugin was created for (SynapseMajor.SynapseMinor.SynapsePatch => 2.7.0)
         SynapseMinor = 10,
         SynapsePatch = 1,
-        Version = "v.1.1.2" //The Current Version of your Plugin
+        Version = "v.1.1.5" //The Current Version of your Plugin
         )]
     public class PluginClass : AbstractPlugin
     {
@@ -40,11 +43,6 @@ namespace SCPSLEnforcedRNG
         public override void Load()
         {
             EventCalls.SetupEvents(ServerConfigs);
-
-            Timing.CallDelayed(3f, () =>
-            {
-                //Map.Get.Scp914.
-            });
 
             DebugTranslator.Console("PLUGIN LOADED SUCCESSFULLY", 0, true);
         }

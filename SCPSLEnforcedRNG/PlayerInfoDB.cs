@@ -43,16 +43,23 @@ namespace SCPSLEnforcedRNG
         public static int playerCount = 0;
 
         public PlayerInfoDB playerInfo;
-        private Player playerPtr;
+        //private Player playerPtr;
         public Player PlayerPtr { get; set; }
+        public PlayerStatTrack StatTrackSession { get ; set; }
+        public PlayerStatTrack StatTrackRound { get; set; }
         private int index;
         public int Index { get; }
+
         public string PlayerId
         {
             get { return playerInfo.GameIdentifier; }
             set { playerInfo.GameIdentifier = value; repository.Save(playerInfo); }
         }
-        //Change count to how many times wasn't a class
+        public string Name
+        {
+            get { return playerInfo.Name; }
+            set { playerInfo.Name = value; repository.Save(playerInfo); }
+        }
         public uint NotSCP 
         { 
             get { return playerInfo.NotSCP; }
@@ -96,7 +103,7 @@ namespace SCPSLEnforcedRNG
         public PlayerInfo(Player playerPtr, string playerId)
         {
             playerInfo = repository.FindByPlayerID(playerId);
-
+            string outText;
             if(playerInfo == null)
             {
                 playerInfo = repository.Insert(new PlayerInfoDB() 
@@ -117,6 +124,7 @@ namespace SCPSLEnforcedRNG
             roundRole = -1;
             DebugTranslator.Console("Player Registered on Index " + index);
             DebugTranslator.Console(Index.ToString() + " | " + playerInfo.GameIdentifier + " | " + playerInfo.Name);
+            PrintInfo();
         }
         /*~PlayerInfo()
         {
@@ -125,7 +133,7 @@ namespace SCPSLEnforcedRNG
         public string PrintInfo()
         {
             string info =
-                "Player " + playerPtr.NickName + " wasn't\n" +
+                "Player " + Name + " wasn't\n" +
                 "SCP:       " + NotSCP       + " times\n" +
                 "D-Boi:     " + NotDboi      + " times\n" +
                 "Scientist: " + NotScientist + " times\n" +

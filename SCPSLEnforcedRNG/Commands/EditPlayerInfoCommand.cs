@@ -17,7 +17,7 @@ namespace SCPSLEnforcedRNG
         Description = "Edits Players information", // A Description for the Commad
         Permission = "admin", // The permission which the player needs to execute the Command
         Platforms = new[] { Platform.RemoteAdmin, Platform.ServerConsole }, // The platforms the command can be used
-        Usage = ".FR {NickName} {PlayerInfo} {NewValue}, If no arguments prints available Player Info Arguments", // A message how to use the command
+        Usage = ".epi {NickName} {PlayerInfo} {NewValue}, If no arguments prints available Player Info Arguments", // A message how to use the command
         Arguments = new[] { "Nickname", "PlayerInfo", "Value" } //The Arguments that the will be displayed in the 
         //RemoteAdmin(only) to help the user to understand how to execute the command
         )]
@@ -67,23 +67,34 @@ namespace SCPSLEnforcedRNG
                 return result;
             }
 
+
+            string tempInfo;
+            uint tempVal;
             switch(playerInfo)
             {
                 case "scp":
                 case "notscp":
                     player.NotSCP = (uint)newValue;
+                    tempInfo = "SCP";
+                    tempVal = player.NotSCP;
                     break;
                 case "pc":
                 case "notpc":
                     player.NotPC = (uint)newValue;
+                    tempInfo = "PC";
+                    tempVal = player.NotPC;
                     break;
                 case "guard":
                 case "notguard":
                     player.NotGuard = (uint)newValue;
+                    tempInfo = "Guard";
+                    tempVal = player.NotGuard;
                     break;
                 case "scientist":
                 case "notscientist":
                     player.NotScientist = (uint)newValue;
+                    tempInfo = "Scientist";
+                    tempVal = player.NotScientist;
                     break;
                 case "dboi":
                 case "notdboi":
@@ -92,6 +103,8 @@ namespace SCPSLEnforcedRNG
                 case "d-class":
                 case "notd-class":
                     player.NotDboi = (uint)newValue;
+                    tempInfo = "D-Class";
+                    tempVal = player.NotDboi;
                     break;
                 default:
                     result.Message = "Invalid Player Info Argument";
@@ -99,7 +112,7 @@ namespace SCPSLEnforcedRNG
                     return result;
             }
 
-            result.Message = "Successfully changed value.";
+            result.Message = "Successfully changed value of " + tempInfo + " to " + tempVal + ".";
             result.State = CommandResultState.Ok;
 
             return result;

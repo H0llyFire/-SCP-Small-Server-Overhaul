@@ -9,16 +9,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using static System.Collections.Specialized.BitVector32;
 
 namespace SCPSLEnforcedRNG
 {
     public static class GameTech
     {
-        public static PluginConfig ServerConfigs;
+        public static PluginConfig ServerConfigs { get; set; }
+        public static RoundStatTrack RoundStats { get; set; }
+        public static PlayerStatTrack BestUserStats { get; set; }
 
+        private static PlayerInfo doggoPtr;
+        private static Room doggoRoom;
+        private static int doggoCounter;
+        public  static CoroutineHandle doggoLightsFlash;
+        public  static CoroutineHandle doggoAlive;
 
-
+        public static bool omegaWarhead;
         public static float respawnTimer = 0;
         public static List<PlayerInfo> playerList = new();
         public static float roundStartTime;
@@ -52,16 +60,99 @@ namespace SCPSLEnforcedRNG
                 else TurnTutorialToSpectators();
             }
         }
+        public static IEnumerator<float> GeneratorCheckTimer()
+        {
+            for (; ; )
+            {
+                yield return Timing.WaitForSeconds(3f);
+                CheckGeneratorsOvercharge();
+            }
+        }
+        public static IEnumerator<float> DoggoCampTimer()
+        { //10s; 2s check
+            for(; ; )
+            {
+                yield return Timing.WaitForSeconds(2f);
+                if (doggoRoom != null && doggoRoom == doggoPtr.PlayerPtr.Room)
+                {
+                    //DebugTranslator.Console(doggoRoom.RoomName+"\n"+doggoCounter, 1);
+
+                    if (doggoCounter == 3)
+                    {
+                        //FuckUp Lights
+                        doggoLightsFlash = Timing.RunCoroutine(FlashingLightsTimer());
+                        doggoCounter++;
+                    }
+                    else
+                    {
+                        doggoCounter++;
+                    }
+                }
+                else
+                {
+                    //UnFuckUp Lights
+                    if(doggoRoom!=null)
+                    {
+                        Timing.KillCoroutines(doggoLightsFlash);
+                    }
+                    doggoCounter = 0;
+                    doggoRoom = doggoPtr.PlayerPtr.Room;
+                    //DebugTranslator.Console(doggoRoom.RoomName, 1);
+                }
+            }
+        }
+        public static IEnumerator<float> FlashingLightsTimer()
+        {
+            for(; ; )
+            {
+                if(!OfflineRooms.Contains(doggoRoom))
+                    doggoRoom.LightsOut(0.2f);
+                //DebugTranslator.Console("FLASH");
+                yield return Timing.WaitForSeconds(5f);
+            }
+        }
+        public static IEnumerator<float> OmegaWarheadTimer()
+        {
+            for(; ; )
+            {
+                omegaWarhead = true;
+                Map.Get.Cassie("ALPHA WARHEAD DETONATION FAILED TO .g6 NEUTRALIZE ALL THE THREATS pitch_.4 .g4 .g4 pitch_1 . OMEGA WARHEAD DETONATION SEQUENCE ENGAGED . TOP SIDE OF THE FACILITY WILL BE DETONATED IN T MINUS 300 SECONDS");
+                Map.Get.SendBroadcast(10, "Omega Warhead Detonation in 300 seconds.");
+
+                yield return Timing.WaitForSeconds(150f); //150s left
+                Map.Get.Cassie("pitch.4 .g4 .g4 pitch_1 OMEGA WARHEAD DETONATION IN T MINUS 150 SECONDS", true, false);
+                Map.Get.SendBroadcast(10, "Omega Warhead Detonation in 150 seconds.");
+
+                yield return Timing.WaitForSeconds(90f); //60s left
+                Map.Get.Cassie("pitch.4 .g4 .g4 pitch_1 OMEGA WARHEAD DETONATION IN T MINUS 60 SECONDS", true, false);
+                Map.Get.SendBroadcast(10, "Omega Warhead Detonation in 60 seconds.");
+
+                yield return Timing.WaitForSeconds(40f); //20s left
+                Map.Get.Cassie("pitch.4 .g4 .g4 pitch_1 OMEGA WARHEAD DETONATION IN T MINUS 20 SECONDS pitch_.2 .g4 . .g4 . .g4 . .g4 . .g4 . .g4", true, false);
+                Map.Get.SendBroadcast(10, "Omega Warhead Detonation in 20 seconds.");
+
+                yield return Timing.WaitForSeconds(20f);
+                Map.Get.Nuke.Detonate();
+                foreach(var player in playerList)
+                {
+                    player.PlayerPtr.Kill("Omega Warhead Detonation.");
+                }
+                yield return Timing.WaitForSeconds(50f);
+            }
+        }
 
 
 
         public static void SetupMapStart()
         {
             LastGeneratorCheck = 0;
+            omegaWarhead = false;
             LightsOutMode = ServerConfigs.LightsOutMode;
             roundStartTime = Timing.LocalTime;
             ResetRoles();
             if (RoundCoroutines.Count > 0) foreach (var coroutine in RoundCoroutines) Timing.KillCoroutines(coroutine);
+            Timing.KillCoroutines(doggoAlive);
+            Timing.KillCoroutines(doggoLightsFlash);
 
             Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = true;
             LightsOut(ServerConfigs.StartingLightsOff);
@@ -69,6 +160,8 @@ namespace SCPSLEnforcedRNG
 
             Timing.CallDelayed(2f, () => AssignRoles(Server.Get.PlayersAmount));
             RoundCoroutines.Add(Timing.RunCoroutine(RoundRespawnTimer()));
+            RoundCoroutines.Add(Timing.RunCoroutine(GeneratorCheckTimer()));
+            
         }
 
         public static int LightsOut(int amount)
@@ -138,46 +231,44 @@ namespace SCPSLEnforcedRNG
             int countActive = 0;
             foreach (var generator in Map.Get.Generators)
             {
-                if (generator.Engaged) countEngaged++;
+                if (generator.Engaged) 
+                    countEngaged++;
                 else if (generator.Active)
-                {
                     countActive++;
-                    Timing.CallDelayed(generator.Time + 2f, () => CheckGeneratorsOvercharge());
-                }
             }
             ModifyMapOnGenerators();
 
-            LastGeneratorCheck = countEngaged;
-            DebugTranslator.Console("Engaged Generators: " + countEngaged +
-                "\nActive Generators: " + countActive);
+            /*DebugTranslator.Console("Engaged Generators: " + countEngaged +
+                "\nActive Generators: " + countActive);*/
             return countEngaged;
         }
         public static void ModifyMapOnGenerators()
         {
-            if (LastGeneratorCheck == -1) return;
+            if (LastGeneratorCheck == 3) return;
 
             int generatorCount = 0;
             foreach (var generator in Map.Get.Generators)
                 if (generator.Active) generatorCount++;
-            switch (generatorCount)
+
+            if (generatorCount == 3 && LastGeneratorCheck != 3)
             {
-                case 3:
-                    Map.Get.Cassie("ALL FACILITY SECURITY SYSTEMS ARE NOW OPERATIONAL");
-                    Map.Get.SendBroadcast(10, "Security Systems ON-LINE");
-                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
-                    TurnOnLights(ServerConfigs.StartingLightsOff);
-                    LastGeneratorCheck = -1;
-                    break;
-                case 2:
-                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
-                    TurnOnLights(ServerConfigs.GeneratorLightsOn);
-                    break;
-                case 1:
-                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
-                    TurnOnLights(ServerConfigs.GeneratorLightsOn);
-                    break;
-                default:
-                    break;
+                Map.Get.Cassie("ALL FACILITY SECURITY SYSTEMS ARE NOW OPERATIONAL");
+                Map.Get.SendBroadcast(10, "Security Systems ON-LINE");
+                Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
+                TurnOnLights(ServerConfigs.StartingLightsOff);
+                LastGeneratorCheck = 3;
+            }
+            else if (generatorCount == 2 && LastGeneratorCheck < 2)
+            {
+                Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
+                TurnOnLights(ServerConfigs.GeneratorLightsOn);
+                LastGeneratorCheck = 2;
+            }
+            else if (generatorCount == 1 && LastGeneratorCheck < 1)
+            {
+                Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = false;
+                TurnOnLights(ServerConfigs.GeneratorLightsOn);
+                LastGeneratorCheck = 1;
             }
         }
         public static void TurnSpectatorsToTutorial()
@@ -306,11 +397,21 @@ namespace SCPSLEnforcedRNG
             int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
             var selectedPlayer = tempPlayerList[tempIndex];
             selectedPlayer.roundRole = 0;
+            
+            int[] scpsMinus = { 0, 3, 5, 16 };
+            int[] scpsPlus  = { 0, 3, 5, 16, 9 };
+            int[] scps = playerList.Count >= 8 ? scpsPlus : scpsMinus;
 
-            int[] scps = { 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16 };
-            int tempIndexScp = UnityEngine.Random.Range(0, scps.Length);
-            selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp];
+            int tempIndexScp = UnityEngine.Random.Range(0, scps.Length*100);
+            selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp % scps.Length];
             selectedPlayer.AddUpCounts();
+
+            if (scps[tempIndexScp % scps.Length] == 16) 
+            {
+                DebugTranslator.Console("Doggo SCP");
+                doggoPtr = selectedPlayer;
+                doggoAlive = Timing.RunCoroutine(DoggoCampTimer()); 
+            }
 
             string tempText = "";
             foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";

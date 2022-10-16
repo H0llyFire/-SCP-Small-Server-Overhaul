@@ -4,6 +4,7 @@ using RemoteAdmin.Communication;
 using Synapse;
 using Synapse.Api;
 using Synapse.Api.Events.SynapseEventArguments;
+using Synapse.Api.Items;
 using Synapse.Api.Plugin;
 using System.Dynamic;
 
@@ -14,22 +15,63 @@ namespace SCPSLEnforcedRNG
         public static void SetupEvents(PluginConfig ServerConfigs)
         {
             SynapseController.Server.Events.Round.RoundStartEvent += OnRoundStart;
+            SynapseController.Server.Events.Round.TeamRespawnEvent += OnTeamRespawn;
+            SynapseController.Server.Events.Round.RoundEndEvent += OnRoundEnd;
+            SynapseController.Server.Events.Round.RoundRestartEvent += OnRoundEnd;
+
             SynapseController.Server.Events.Player.PlayerJoinEvent += OnPlayerJoin;
             SynapseController.Server.Events.Player.PlayerLeaveEvent += OnPlayerLeave;
-            SynapseController.Server.Events.Round.TeamRespawnEvent += OnTeamRespawn;
             SynapseController.Server.Events.Player.PlayerGeneratorInteractEvent += OnGeneratorInteract;
             SynapseController.Server.Events.Player.PlayerDeathEvent += OnPlayerDeath;
             SynapseController.Server.Events.Player.PlayerEscapesEvent += OnPlayerEscape;
-            SynapseController.Server.Events.Round.RoundEndEvent += OnRoundEnd;
-            SynapseController.Server.Events.Round.RoundRestartEvent += OnRoundEnd;
             SynapseController.Server.Events.Player.PlayerRadioInteractEvent += OnRadio;
+
+            SynapseController.Server.Events.Map.DoorInteractEvent += OnDoor;
+            SynapseController.Server.Events.Map.WarheadDetonationEvent += OnNuke;
             //SynapseController.Server.Events.Scp.ScpAttackEvent
 
             GameTech.ServerConfigs = ServerConfigs;
         }
+        public static void OnDoor(DoorInteractEventArgs args)
+        {
+
+        }
+        public static void OnNuke()
+        {
+            if (GameTech.omegaWarhead) return;
+            int scp = 0;
+            int mtf = 0;
+            int cis  = 0;
+            int dcl  = 0;
+
+            foreach(var player in GameTech.playerList)
+            {
+                switch(player.PlayerPtr.Team)
+                {
+                    case Team.SCP:
+                        scp++;
+                        break;
+                    case Team.MTF:
+                    case Team.RSC:
+                    case Team.RIP:
+                        mtf++;
+                        break;
+                    case Team.CDP:
+                        dcl++;
+                        break;
+                    case Team.CHI:
+                        cis++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if      (scp > 0 && (mtf > 0 || dcl > 0)) GameTech.RoundCoroutines.Add(Timing.RunCoroutine(GameTech.OmegaWarheadTimer()));
+            else if (mtf > 0 && (cis > 0 || dcl > 0)) GameTech.RoundCoroutines.Add(Timing.RunCoroutine(GameTech.OmegaWarheadTimer()));
+        }
         public static void OnRadio(PlayerRadioInteractEventArgs args)
         {
-            args.Radio.Durabillity = 1000;
+            args.Radio.Durabillity = 100;
         }
         public static void OnRoundStart()
         {
@@ -44,19 +86,24 @@ namespace SCPSLEnforcedRNG
         public static void OnPlayerEscape(PlayerEscapeEventArgs args)
         {
             if (args.IsClassD && GameTech.GetRoleAmount(1) == 1)
-                Timing.CallDelayed(20f, () =>
             {
-                Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Open = true;
-                Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Locked = true;
-                Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Open = true;
-                Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Locked = true;
-                Map.Get.Cassie("ATTENTION . NO .g1 CLASS D PERSONNEL DETECTED INSIDE .g2 THE FACILITY . ALL .g3 FACILITY GATES HAVE BEEN OPENED . SCIENCE .g4 PERSONNEL SHOULD EVACUATE .g1 IMMEDIATELY");
-                Map.Get.SendBroadcast(10, "All Gates Have Been Opened.");
-            });
+                DebugTranslator.Console("Last Dclass Escaped.");
+                Timing.CallDelayed(35f, () =>
+                {
+                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Open = true;
+                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Locked = true;
+                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Open = true;
+                    Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Locked = true;
+                    Map.Get.Cassie("ATTENTION . NO .g1 CLASS D PERSONNEL DETECTED INSIDE .g2 THE FACILITY . ALL .g3 FACILITY GATES HAVE BEEN OPENED . SCIENCE .g4 PERSONNEL SHOULD EVACUATE .g1 IMMEDIATELY");
+                    Map.Get.SendBroadcast(10, "All Gates Have Been Opened.");
+                });
+            }
         }
         public static void OnPlayerDeath(PlayerDeathEventArgs args)
         {
             if (args.Victim.RoleType == RoleType.ClassD && GameTech.GetRoleAmount(1) == 1)
+            {
+                DebugTranslator.Console("Last Dclass Died.");
                 Timing.CallDelayed(20f, () =>
                 {
                     Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Open = true;
@@ -66,6 +113,14 @@ namespace SCPSLEnforcedRNG
                     Map.Get.Cassie("ATTENTION . NO .g1 CLASS D PERSONNEL DETECTED INSIDE .g2 THE FACILITY . ALL .g3 FACILITY GATES HAVE BEEN OPENED . SCIENCE .g4 PERSONNEL SHOULD EVACUATE .g1 IMMEDIATELY");
                     Map.Get.SendBroadcast(10, "All Gates Have Been Opened.");
                 });
+            }
+            if(args.Victim.RoleType==RoleType.Scp93953)
+            {
+                Timing.KillCoroutines(GameTech.doggoAlive);
+                Timing.KillCoroutines(GameTech.doggoLightsFlash);
+            }
+
+
         }
         public static void OnPlayerJoin(PlayerJoinEventArgs args)
         {
@@ -86,14 +141,14 @@ namespace SCPSLEnforcedRNG
         }
         public static void OnPlayerLeave(PlayerLeaveEventArgs args)
         {
-            /*
+            
             foreach (var player in GameTech.playerList)
                 if (player.PlayerId == args.Player.UserId)
                 {
                     GameTech.playerList.Remove(player);
                     break;
                 }
-            DebugTranslator.Console("Player " + args.Player.NickName + " has left the server. Players Left: " + GameTech.playerList.Count, 0, true);*/
+            DebugTranslator.Console("Player " + args.Player.NickName + " has left the server. Players Left: " + GameTech.playerList.Count, 0, true);
         }
         public static void OnTeamRespawn(TeamRespawnEventArgs args)
         {
@@ -120,7 +175,7 @@ namespace SCPSLEnforcedRNG
         }
         public static void OnGeneratorInteract(PlayerGeneratorInteractEventArgs args)
         {
-            if (args.GeneratorInteraction == Synapse.Api.Enum.GeneratorInteraction.Activated) GameTech.CheckGeneratorsOvercharge();
+            //if (args.GeneratorInteraction == Synapse.Api.Enum.GeneratorInteraction.Activated) GameTech.CheckGeneratorsOvercharge();
         }
 
     }

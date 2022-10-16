@@ -7,8 +7,8 @@ namespace SCPSLEnforcedRNG
         Aliases = new string[] { "plv" }, // Aliases you can use instead of main command name
         Description = "Prints all players", // A Description for the Commad
         Permission = "", // The permission which the player needs to execute the Command
-        Platforms = new[] { Platform.ServerConsole }, // The platforms the command can be used
-        Usage = "Don't", // A message how to use the command
+        Platforms = new[] { Platform.ServerConsole, Platform.ClientConsole, Platform.RemoteAdmin }, // The platforms the command can be used
+        Usage = ".plv", // A message how to use the command
         Arguments = new[] { "" } //The Arguments that the will be displayed in the 
         //RemoteAdmin(only) to help the user to understand how to execute the command
         )]
@@ -20,9 +20,15 @@ namespace SCPSLEnforcedRNG
         public CommandResult Execute(CommandContext context)
         {
             var result = new CommandResult();
-            string tempText = "";
+            string tempText = "\nSCP|PC |Dcl|Sci|Grd|Player\n";
             foreach (var player in GameTech.playerList)
-                tempText += player.PlayerPtr.NickName + " " + player.PlayerId + " => " + player.NotSCP + "-" + player.NotGuard + "-" + player.NotDboi + "-" + player.NotScientist +"\n";
+                tempText += 
+                    player.NotSCP.ToString("D3")         + "|" +
+                    player.NotPC.ToString("D3")          + "|" +
+                    player.NotDboi.ToString("D3")        + "|" +
+                    player.NotScientist.ToString("D3")   + "|" +
+                    player.NotGuard.ToString("D3")       + "|" +
+                    player.Name + "@" + player.PlayerId + "\n";
 
             result.Message = tempText;
             result.State = CommandResultState.Ok;

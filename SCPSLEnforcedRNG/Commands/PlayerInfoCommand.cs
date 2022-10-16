@@ -3,14 +3,13 @@
 namespace SCPSLEnforcedRNG
 {
     [CommandInformation(
-        Name = "PlayerInfo", // The main name and parameter for your command
-        Aliases = new string[] { "pi" }, // Aliases you can use instead of main command name
-        Description = "Prints your Player Info", // A Description for the Commad
-        Permission = "", // The permission which the player needs to execute the Command
-        Platforms = new[] { Platform.ClientConsole }, // The platforms the command can be used
-        Usage = "Don't", // A message how to use the command
-        Arguments = new[] { "" } //The Arguments that the will be displayed in the 
-        //RemoteAdmin(only) to help the user to understand how to execute the command
+        Name = "PlayerInfo", 
+        Aliases = new string[] { "pi" }, 
+        Description = "Prints your Player Info", 
+        Permission = "", 
+        Platforms = new[] { Platform.ClientConsole },
+        Usage = ".pi",
+        Arguments = new[] { "" }
         )]
     public class PlayerInfoCommand : ISynapseCommand
     {
