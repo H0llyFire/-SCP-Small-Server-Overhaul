@@ -45,7 +45,7 @@ namespace SCPSLEnforcedRNG
         public PlayerInfoDB playerInfo;
         //private Player playerPtr;
         public Player PlayerPtr { get; set; }
-        public PlayerStatTrack StatTrackSession { get ; set; }
+        public PlayerStatTrack StatTrackSession { get; set; } = new();
         public PlayerStatTrack StatTrackRound { get; set; }
         private int index;
         public int Index { get; }
@@ -158,6 +158,10 @@ namespace SCPSLEnforcedRNG
         public void SavePlayerToDB()
         {
             repository.Save(playerInfo);
+        }
+        public void AddUpStats()
+        {
+            StatTrackSession += StatTrackRound;
         }
     }
 }

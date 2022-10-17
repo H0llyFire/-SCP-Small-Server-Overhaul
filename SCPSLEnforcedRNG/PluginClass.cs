@@ -43,7 +43,7 @@ namespace SCPSLEnforcedRNG
         public override void Load()
         {
             EventCalls.SetupEvents(ServerConfigs);
-
+            StatTrack.SetUpCurrentSession();
             DebugTranslator.Console("PLUGIN LOADED SUCCESSFULLY", 0, true);
         }
 

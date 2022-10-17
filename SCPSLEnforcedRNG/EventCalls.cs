@@ -17,7 +17,7 @@ namespace SCPSLEnforcedRNG
             SynapseController.Server.Events.Round.RoundStartEvent += OnRoundStart;
             SynapseController.Server.Events.Round.TeamRespawnEvent += OnTeamRespawn;
             SynapseController.Server.Events.Round.RoundEndEvent += OnRoundEnd;
-            SynapseController.Server.Events.Round.RoundRestartEvent += OnRoundEnd;
+            SynapseController.Server.Events.Round.RoundRestartEvent += OnRoundRestart;
 
             SynapseController.Server.Events.Player.PlayerJoinEvent += OnPlayerJoin;
             SynapseController.Server.Events.Player.PlayerLeaveEvent += OnPlayerLeave;
@@ -25,12 +25,26 @@ namespace SCPSLEnforcedRNG
             SynapseController.Server.Events.Player.PlayerDeathEvent += OnPlayerDeath;
             SynapseController.Server.Events.Player.PlayerEscapesEvent += OnPlayerEscape;
             SynapseController.Server.Events.Player.PlayerRadioInteractEvent += OnRadio;
+            SynapseController.Server.Events.Player.PlayerFlipCoinEvent += OnCoinFlip;
 
             SynapseController.Server.Events.Map.DoorInteractEvent += OnDoor;
             SynapseController.Server.Events.Map.WarheadDetonationEvent += OnNuke;
             //SynapseController.Server.Events.Scp.ScpAttackEvent
 
             GameTech.ServerConfigs = ServerConfigs;
+        }
+
+        public static void OnCoinFlip(PlayerFlipCoinEventArgs args)
+        {
+            foreach (var player in GameTech.playerList)
+            {
+                if (player.PlayerId == args.Player.UserId)
+                {
+                    player.StatTrackRound.CoinFlips++;
+                    break;
+                }
+            }
+            
         }
         public static void OnDoor(DoorInteractEventArgs args)
         {
@@ -76,12 +90,33 @@ namespace SCPSLEnforcedRNG
         public static void OnRoundStart()
         {
             GameTech.SetupMapStart();
+            foreach (var player in GameTech.playerList)
+            {
+                player.StatTrackRound = new()
+                {
+                    PlayerID = player.PlayerId,
+                    PlayerName = player.Name
+                };
+            }
+
+
             DebugTranslator.Console("ROUND STARTED", 0, true);
         }
         public static void OnRoundEnd()
         {
-            GameTech.playerList.Clear();
-            PlayerInfo.playerCount = 0;
+            foreach (var player in GameTech.playerList)
+            {
+                player.AddUpStats();
+            }
+            StatTrack.PrintOutStats();
+            StatTrack.MakeNewDBEntry();
+        }
+        public static void OnRoundRestart()
+        {
+                GameTech.playerList.Clear();
+                PlayerInfo.playerCount = 0;
+                GameTech.LastGeneratorCheck = 0;
+                GameTech.omegaWarhead = false;
         }
         public static void OnPlayerEscape(PlayerEscapeEventArgs args)
         {
@@ -110,6 +145,7 @@ namespace SCPSLEnforcedRNG
                     Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Locked = true;
                     Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Open = true;
                     Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Locked = true;
+
                     Map.Get.Cassie("ATTENTION . NO .g1 CLASS D PERSONNEL DETECTED INSIDE .g2 THE FACILITY . ALL .g3 FACILITY GATES HAVE BEEN OPENED . SCIENCE .g4 PERSONNEL SHOULD EVACUATE .g1 IMMEDIATELY");
                     Map.Get.SendBroadcast(10, "All Gates Have Been Opened.");
                 });

@@ -145,16 +145,20 @@ namespace SCPSLEnforcedRNG
 
         public static void SetupMapStart()
         {
-            LastGeneratorCheck = 0;
-            omegaWarhead = false;
+            RoundStats = new();
             LightsOutMode = ServerConfigs.LightsOutMode;
             roundStartTime = Timing.LocalTime;
             ResetRoles();
+
             if (RoundCoroutines.Count > 0) foreach (var coroutine in RoundCoroutines) Timing.KillCoroutines(coroutine);
             Timing.KillCoroutines(doggoAlive);
             Timing.KillCoroutines(doggoLightsFlash);
 
             Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Intercom).Locked = true;
+            Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Open = false;
+            Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_A).Locked = false;
+            Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Open = false;
+            Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Locked = false;
             LightsOut(ServerConfigs.StartingLightsOff);
 
 
@@ -403,12 +407,13 @@ namespace SCPSLEnforcedRNG
             int[] scps = playerList.Count >= 8 ? scpsPlus : scpsMinus;
 
             int tempIndexScp = UnityEngine.Random.Range(0, scps.Length*100);
+            DebugTranslator.Console("Random Pick: " + tempIndexScp + "\nCorresponding Pick: " + tempIndexScp % scps.Length);
             selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp % scps.Length];
             selectedPlayer.AddUpCounts();
 
             if (scps[tempIndexScp % scps.Length] == 16) 
             {
-                DebugTranslator.Console("Doggo SCP");
+                DebugTranslator.Console("Doggo SCP", 1);
                 doggoPtr = selectedPlayer;
                 doggoAlive = Timing.RunCoroutine(DoggoCampTimer()); 
             }
