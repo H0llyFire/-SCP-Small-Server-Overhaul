@@ -21,7 +21,7 @@ namespace SCPSLEnforcedRNG
         {
             var result = new CommandResult();
             string tempText = "\nSCP|PC |Dcl|Sci|Grd|Player\n";
-            foreach (var player in GameTech.playerList)
+            foreach (var player in PlayerInfo.playerList)
                 tempText += 
                     player.NotSCP.ToString("D3")         + "|" +
                     player.NotPC.ToString("D3")          + "|" +

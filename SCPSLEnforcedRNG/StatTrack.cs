@@ -21,7 +21,7 @@ namespace SCPSLEnforcedRNG
         public static void MakeNewDBEntry()
         {
             List<PlayerStatTrack> playersStats = new List<PlayerStatTrack>();
-            foreach (var player in GameTech.playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
                 if(player.StatTrackRound!=null)
                     playersStats.Add(player.StatTrackRound);
@@ -60,12 +60,12 @@ namespace SCPSLEnforcedRNG
                 "Total Damage Dealt: " + GameTech.RoundStats.TotalDamageDealt + "\n" +
                 "Total MTF Spawns: " + GameTech.RoundStats.TotalMTFSpawns + "\n" +
                 "Total Chaos Spawns: " + GameTech.RoundStats.TotalCISpawns + "\n" +
-                "Total Door Interactions" + GameTech.RoundStats.DoorInteracts + "\n" +
+                "Total Door Interactions: " + GameTech.RoundStats.DoorInteracts + "\n" +
                 "Tesla Gate Deaths: " + GameTech.RoundStats.TeslaGateKills + "\n" +
                 "Ammount of Candy Grabbed: " + GameTech.RoundStats.CandiesGrabbed + "\n" +
                 "HID Usage %: " + GameTech.RoundStats.HIDUsage + "\n";
 
-            foreach (var player in GameTech.playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
                 string playerStats = 
                     "Damage Dealt: " + player.StatTrackRound.DamageDealt + "\n" +
@@ -122,37 +122,37 @@ namespace SCPSLEnforcedRNG
 
     public class RoundStatTrack
     {
-        public int TimesRonDiedToDoggoInCP { get; set; } = 0;
-        public int EscapedDClass { get; set; } = 0;
-        public int EscapedScientist { get; set; } = 0;
-        public int TotalDamageDealt { get; set; } = 0;
-        public int TotalMTFSpawns { get; set; } = 0;
-        public int TotalCISpawns { get; set; } = 0;
-        public int DoorInteracts { get; set; } = 0;
-        public int TeslaGateKills { get; set; } = 0;
-        public int CandiesGrabbed { get; set; } = 0;
-        public int HIDUsage { get; set; } = 0;
+        public int      TimesRonDiedToDoggoInCP     { get; set; } = 0; //WRK
+        public int      EscapedDClass               { get; set; } = 0;
+        public int      EscapedScientist            { get; set; } = 0;
+        public float    TotalDamageDealt            { get; set; } = 0; //RDY
+        public int      TotalMTFSpawns              { get; set; } = 0; //RDY
+        public int      TotalCISpawns               { get; set; } = 0; //RDY
+        public int      DoorInteracts               { get; set; } = 0; //WRK
+        public int      TeslaGateKills              { get; set; } = 0; //RDY
+        public int      CandiesGrabbed              { get; set; } = 0; //???
+        public float    HIDUsage                    { get; set; } = 0; //WRK
 
     }
     public class PlayerStatTrack
     {
-        public string PlayerID { get; set; }
-        public string PlayerName { get; set; }
+        public string   PlayerID { get; set; }
+        public string   PlayerName { get; set; }
 
-        public int DamageDealt { get; set; } = 0;
-        public int SCPDamageDealt { get; set; } = 0;
-        public int TotalKills { get; set; } = 0;
-        public int DamageHealed { get; set; } = 0;
-        public int SCPItemsUsed { get; set; } = 0;
-        public int DistanceWalkedMaybe { get; set; } = 0;
-        public int TimesRespawned { get; set; } = 0;
-        public int EscapeTime { get; set; } = 0;
-        public int DoorInteracts { get; set; } = 0;
-        public int ShotsFired { get; set; } = 0;
-        public ItemType HighestKeycardHeld { get; set; } = ItemType.None;
-        public int GeneratorsActivated { get; set; } = 0;
-        public int GeneratorsStopped { get; set; } = 0;
-        public int CoinFlips { get; set; } = 0;
+        public float    DamageDealt         { get; set; } = 0f; //RDY
+        public float    SCPDamageDealt      { get; set; } = 0f; //RDY
+        public int      TotalKills          { get; set; } = 0;
+        public int      DamageHealed        { get; set; } = 0;
+        public int      SCPItemsUsed        { get; set; } = 0;
+        public int      DistanceWalkedMaybe { get; set; } = 0;
+        public int      TimesRespawned      { get; set; } = 0;
+        public int      EscapeTime          { get; set; } = 0;
+        public int      DoorInteracts       { get; set; } = 0; //WRK
+        public int      ShotsFired          { get; set; } = 0;
+        public ItemType HighestKeycardHeld  { get; set; } = ItemType.None;
+        public int      GeneratorsActivated { get; set; } = 0;
+        public int      GeneratorsStopped   { get; set; } = 0;
+        public int      CoinFlips           { get; set; } = 0; //WRK
 
         public static PlayerStatTrack operator+ (PlayerStatTrack a, PlayerStatTrack b)
         {

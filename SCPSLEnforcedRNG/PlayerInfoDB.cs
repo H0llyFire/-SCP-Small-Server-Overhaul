@@ -40,10 +40,12 @@ namespace SCPSLEnforcedRNG
     public class PlayerInfo
     {
         public static PlayerRepository repository = new();
+        public static List<PlayerInfo> playerList = new();
         public static int playerCount = 0;
+        public const string AlexID = "76561198366313280@steam";
+        public const string RonID = "76561198234561648@steam";
 
         public PlayerInfoDB playerInfo;
-        //private Player playerPtr;
         public Player PlayerPtr { get; set; }
         public PlayerStatTrack StatTrackSession { get; set; } = new();
         public PlayerStatTrack StatTrackRound { get; set; }
@@ -162,6 +164,17 @@ namespace SCPSLEnforcedRNG
         public void AddUpStats()
         {
             StatTrackSession += StatTrackRound;
+        }
+
+
+        public static PlayerInfo GetPlayerByID(string id)
+        {
+            foreach(var player in playerList)
+            {
+                if (player.PlayerId == id)
+                    return player;
+            }
+            return null;
         }
     }
 }

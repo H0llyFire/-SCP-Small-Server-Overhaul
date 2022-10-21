@@ -26,17 +26,39 @@ namespace SCPSLEnforcedRNG
             SynapseController.Server.Events.Player.PlayerEscapesEvent += OnPlayerEscape;
             SynapseController.Server.Events.Player.PlayerRadioInteractEvent += OnRadio;
             SynapseController.Server.Events.Player.PlayerFlipCoinEvent += OnCoinFlip;
-
+            SynapseController.Server.Events.Player.PlayerDamageEvent += OnPlayerDamage;
+            
             SynapseController.Server.Events.Map.DoorInteractEvent += OnDoor;
             SynapseController.Server.Events.Map.WarheadDetonationEvent += OnNuke;
+            
+            
             //SynapseController.Server.Events.Scp.ScpAttackEvent
 
             GameTech.ServerConfigs = ServerConfigs;
         }
 
+        public static void OnPlayerDamage(PlayerDamageEventArgs args)
+        {
+            /*
+            if 
+            (
+                args.Victim.RoleType == RoleType.Scp049   || 
+                args.Victim.RoleType == RoleType.Scp173   || 
+                args.Victim.RoleType == RoleType.Scp096   ||
+                args.Victim.RoleType == RoleType.Scp106   ||
+                args.Victim.RoleType == RoleType.Scp93953 ||
+                args.Victim.RoleType == RoleType.Scp93989 ||
+                args.Victim.RoleType == RoleType.Scp0492
+            )
+                PlayerInfo.GetPlayerByID(args.Killer.UserId).StatTrackRound.SCPDamageDealt += args.Damage;
+            else
+                PlayerInfo.GetPlayerByID(args.Killer.UserId).StatTrackRound.DamageDealt += args.Damage;
+            GameTech.RoundStats.TotalDamageDealt += args.Damage;
+            */
+        }
         public static void OnCoinFlip(PlayerFlipCoinEventArgs args)
         {
-            foreach (var player in GameTech.playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
                 if (player.PlayerId == args.Player.UserId)
                 {
@@ -48,7 +70,8 @@ namespace SCPSLEnforcedRNG
         }
         public static void OnDoor(DoorInteractEventArgs args)
         {
-
+            GameTech.RoundStats.DoorInteracts++;
+            PlayerInfo.GetPlayerByID(args.Player.UserId).StatTrackRound.DoorInteracts++;
         }
         public static void OnNuke()
         {
@@ -58,7 +81,7 @@ namespace SCPSLEnforcedRNG
             int cis  = 0;
             int dcl  = 0;
 
-            foreach(var player in GameTech.playerList)
+            foreach(var player in PlayerInfo.playerList)
             {
                 switch(player.PlayerPtr.Team)
                 {
@@ -90,7 +113,7 @@ namespace SCPSLEnforcedRNG
         public static void OnRoundStart()
         {
             GameTech.SetupMapStart();
-            foreach (var player in GameTech.playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
                 player.StatTrackRound = new()
                 {
@@ -104,16 +127,24 @@ namespace SCPSLEnforcedRNG
         }
         public static void OnRoundEnd()
         {
-            foreach (var player in GameTech.playerList)
+            foreach(var item in Map.Get.Items)
+            {
+                if (item.ItemType == ItemType.MicroHID)
+                    GameTech.RoundStats.HIDUsage = 100f-item.Durabillity;
+            }
+
+
+
+            foreach (var player in PlayerInfo.playerList)
             {
                 player.AddUpStats();
             }
-            StatTrack.PrintOutStats();
+            //StatTrack.PrintOutStats();
             StatTrack.MakeNewDBEntry();
         }
         public static void OnRoundRestart()
         {
-                GameTech.playerList.Clear();
+                PlayerInfo.playerList.Clear();
                 PlayerInfo.playerCount = 0;
                 GameTech.LastGeneratorCheck = 0;
                 GameTech.omegaWarhead = false;
@@ -136,6 +167,17 @@ namespace SCPSLEnforcedRNG
         }
         public static void OnPlayerDeath(PlayerDeathEventArgs args)
         {
+            if (args.DamageType == Synapse.Api.Enum.DamageType.Tesla) GameTech.RoundStats.TeslaGateKills++;
+            if (args.Victim.UserId == PlayerInfo.RonID && (args.Killer.RoleType == RoleType.Scp93953 || args.Killer.RoleType == RoleType.Scp93989) &&
+               (args.Victim.Room.RoomType == RoomName.HczCheckpointA ||
+                args.Victim.Room.RoomType == RoomName.HczCheckpointB ||
+                args.Victim.Room.RoomType == RoomName.LczCheckpointA ||
+                args.Victim.Room.RoomType == RoomName.LczCheckpointB ||
+                args.Victim.Room.RoomType == RoomName.HczCheckpointToEntranceZone
+                )) 
+                    GameTech.RoundStats.TimesRonDiedToDoggoInCP++;
+
+
             if (args.Victim.RoleType == RoleType.ClassD && GameTech.GetRoleAmount(1) == 1)
             {
                 DebugTranslator.Console("Last Dclass Died.");
@@ -162,9 +204,9 @@ namespace SCPSLEnforcedRNG
         {
             Timing.CallDelayed(2f, () =>
             {
-                DebugTranslator.Console(GameTech.playerList.Count.ToString(), 1);
+                DebugTranslator.Console(PlayerInfo.playerList.Count.ToString(), 1);
 
-                GameTech.playerList.Add(new PlayerInfo(args.Player, args.Player.UserId));
+                PlayerInfo.playerList.Add(new PlayerInfo(args.Player, args.Player.UserId));
 
                 DebugTranslator.Console(
                     "Player Joined.\n" +
@@ -178,18 +220,21 @@ namespace SCPSLEnforcedRNG
         public static void OnPlayerLeave(PlayerLeaveEventArgs args)
         {
             
-            foreach (var player in GameTech.playerList)
+            foreach (var player in PlayerInfo.playerList)
                 if (player.PlayerId == args.Player.UserId)
                 {
-                    GameTech.playerList.Remove(player);
+                    PlayerInfo.playerList.Remove(player);
                     break;
                 }
-            DebugTranslator.Console("Player " + args.Player.NickName + " has left the server. Players Left: " + GameTech.playerList.Count, 0, true);
+            DebugTranslator.Console("Player " + args.Player.NickName + " has left the server. Players Left: " + PlayerInfo.playerList.Count, 0, true);
         }
         public static void OnTeamRespawn(TeamRespawnEventArgs args)
         {
+            if (args.TeamID == 1) GameTech.RoundStats.TotalMTFSpawns++;
+            else if (args.TeamID == 2) GameTech.RoundStats.TotalCISpawns++;
+
             args.Players.Clear();
-            foreach (var player in GameTech.playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
                 if (player.PlayerPtr.RoleID == 14)
                 {

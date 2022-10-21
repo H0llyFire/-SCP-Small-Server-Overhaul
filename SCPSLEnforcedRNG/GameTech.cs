@@ -26,9 +26,11 @@ namespace SCPSLEnforcedRNG
         public  static CoroutineHandle doggoLightsFlash;
         public  static CoroutineHandle doggoAlive;
 
+
+        public static int lastSCP;
         public static bool omegaWarhead;
         public static float respawnTimer = 0;
-        public static List<PlayerInfo> playerList = new();
+        //public static List<PlayerInfo> playerList = new();
         public static float roundStartTime;
 
         public static List<CoroutineHandle> RoundCoroutines = new List<CoroutineHandle>();
@@ -133,7 +135,7 @@ namespace SCPSLEnforcedRNG
 
                 yield return Timing.WaitForSeconds(20f);
                 Map.Get.Nuke.Detonate();
-                foreach(var player in playerList)
+                foreach(var player in PlayerInfo.playerList)
                 {
                     player.PlayerPtr.Kill("Omega Warhead Detonation.");
                 }
@@ -277,27 +279,27 @@ namespace SCPSLEnforcedRNG
         }
         public static void TurnSpectatorsToTutorial()
         {
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
                 if (player.PlayerPtr.RoleID == 2)
                     player.PlayerPtr.RoleID = 14;
         }
         public static void TurnTutorialToSpectators()
         {
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
                 if (player.PlayerPtr.RoleID == 14)
                     player.PlayerPtr.RoleID = 2;
         }
         public static int GetRoleAmount(int role)
         {
             int count = 0;
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
                 if (player.PlayerPtr.RoleID == role)
                     count++;
             return count;
         }
         public static void ResetRoles()
         {
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
                 player.roundRole = -1;
             }
@@ -347,7 +349,7 @@ namespace SCPSLEnforcedRNG
             //DebugTranslator.Console(tempOut);
             //DebugTranslator.Console(playerCount.ToString());
             //DebugTranslator.Console(playerList.Count.ToString());
-            foreach (PlayerInfo player in playerList)
+            foreach (PlayerInfo player in PlayerInfo.playerList)
             {
                 tempOut += player.PlayerId + " | ";
             }
@@ -388,8 +390,9 @@ namespace SCPSLEnforcedRNG
         {
             uint tempVal = 0;
             List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
+                if (player.PlayerId == PlayerInfo.AlexID) continue;
                 if (tempVal < player.NotSCP)
                 {
                     tempVal = player.NotSCP;
@@ -404,9 +407,17 @@ namespace SCPSLEnforcedRNG
             
             int[] scpsMinus = { 0, 3, 5, 16 };
             int[] scpsPlus  = { 0, 3, 5, 16, 9 };
-            int[] scps = playerList.Count >= 8 ? scpsPlus : scpsMinus;
+            int[] scps = PlayerInfo.playerList.Count >= 8 ? scpsPlus : scpsMinus;
 
-            int tempIndexScp = UnityEngine.Random.Range(0, scps.Length*100);
+            int tempIndexScp;
+            int count = 0;
+            do
+            {
+                tempIndexScp = UnityEngine.Random.Range(0, scps.Length * 100);
+                count++;
+            } while (scps[tempIndexScp % scps.Length] != lastSCP || count < 4);
+            lastSCP = scps[tempIndexScp % scps.Length];
+
             DebugTranslator.Console("Random Pick: " + tempIndexScp + "\nCorresponding Pick: " + tempIndexScp % scps.Length);
             selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp % scps.Length];
             selectedPlayer.AddUpCounts();
@@ -430,8 +441,9 @@ namespace SCPSLEnforcedRNG
         {
             uint tempVal = 0;
             List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
+                if (player.PlayerId == PlayerInfo.AlexID) continue;
                 if (player.roundRole == -1 && tempVal < player.NotPC)
                 {
                     tempVal = player.NotPC;
@@ -458,8 +470,9 @@ namespace SCPSLEnforcedRNG
         {
             uint tempVal = 0;
             List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
+                if (player.PlayerId == PlayerInfo.AlexID) continue;
                 if (player.roundRole == -1 && tempVal < player.NotGuard)
                 {
                     tempVal = player.NotGuard;
@@ -474,6 +487,17 @@ namespace SCPSLEnforcedRNG
             selectedPlayer.PlayerPtr.RoleID = 15;
             selectedPlayer.AddUpCounts();
 
+            selectedPlayer.PlayerPtr.Inventory.Clear();
+            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.GunCrossvec);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Coin);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Flashlight);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.KeycardGuard);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Adrenaline);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.GrenadeFlash);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.ArmorLight);
+            for (int x = 0; x < 60; x++)
+                selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Ammo9x19);
+
             string tempText = "";
             foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
 
@@ -486,8 +510,14 @@ namespace SCPSLEnforcedRNG
         {
             uint tempVal = 0;
             List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
+                if (player.PlayerId == PlayerInfo.AlexID && player.roundRole == -1)
+                { 
+                    tempPlayerList.Clear(); 
+                    tempPlayerList.Add(player); 
+                    break; 
+                }
                 //DebugTranslator.Console("Check " + player.Index);
                 if (player.roundRole == -1 && tempVal < player.NotDboi)
                 {
@@ -517,8 +547,9 @@ namespace SCPSLEnforcedRNG
         {
             uint tempVal = 0;
             List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in playerList)
+            foreach (var player in PlayerInfo.playerList)
             {
+                if (player.PlayerId == PlayerInfo.AlexID) continue;
                 if (player.roundRole == -1 && tempVal < player.NotScientist)
                 {
                     tempVal = player.NotScientist;
