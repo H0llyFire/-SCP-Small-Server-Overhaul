@@ -3,14 +3,6 @@ using MEC;
 using RemoteAdmin.Communication;
 using Synapse;
 using Synapse.Api;
-using Synapse.Api.Plugin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using static System.Collections.Specialized.BitVector32;
 
 namespace SCPSLEnforcedRNG
 {
@@ -20,6 +12,8 @@ namespace SCPSLEnforcedRNG
         public static RoundStatTrack RoundStats { get; set; }
         public static PlayerStatTrack BestUserStats { get; set; }
 
+        public static List<CoroutineHandle> RoundCoroutines = new List<CoroutineHandle>();
+
         private static PlayerInfo doggoPtr;
         private static Room doggoRoom;
         private static int doggoCounter;
@@ -27,13 +21,13 @@ namespace SCPSLEnforcedRNG
         public  static CoroutineHandle doggoAlive;
 
 
-        public static int lastSCP;
+        public static int lastSCP = 0;
         public static bool omegaWarhead;
-        public static float respawnTimer = 0;
-        //public static List<PlayerInfo> playerList = new();
+
+        public static float respawnTimer = 0f;
+        public static float lastScanTime = 0f;
         public static float roundStartTime;
 
-        public static List<CoroutineHandle> RoundCoroutines = new List<CoroutineHandle>();
         public static int LastGeneratorCheck = 0;
         public static bool LightsOutMode;
         public static List<Room> OfflineRooms = new List<Room>();
@@ -60,6 +54,26 @@ namespace SCPSLEnforcedRNG
                 if (!Map.Get.Nuke.Detonated)
                     Round.Get.MtfRespawn(isChaos);
                 else TurnTutorialToSpectators();
+            }
+        }
+        public static IEnumerator<float> ScanTimer()
+        { // 16 => 8 => 4 min if no nuke if ppl in facility
+            //bool commencingScan = false;
+
+            for (; ; )
+            {
+                yield return Timing.WaitForSeconds(5f);
+
+                int generators = CheckGeneratorsOvercharge();
+                float scanTime = Timing.LocalTime - lastScanTime;
+
+                if ((generators == 1 && scanTime >= 960f) || (generators == 2 && scanTime >= 480f) || (generators == 3 && scanTime >= 240f))
+                {
+                    Map.Get.Cassie("jam_010_3 WARNING . FACILITY WIDE CAMERA SCAN IN T MINUS .g1 15 SECONDS");
+                    yield return Timing.WaitForSeconds(15f);
+                    ScanFacility();
+                    lastScanTime = Timing.LocalTime;
+                }
             }
         }
         public static IEnumerator<float> GeneratorCheckTimer()
@@ -107,7 +121,9 @@ namespace SCPSLEnforcedRNG
         {
             for(; ; )
             {
-                if(!OfflineRooms.Contains(doggoRoom))
+                if (doggoRoom.RoomType != RoomName.Outside)
+                    yield return Timing.WaitForSeconds(20f);
+                if ((!OfflineRooms.Contains(doggoRoom)))
                     doggoRoom.LightsOut(0.2f);
                 //DebugTranslator.Console("FLASH");
                 yield return Timing.WaitForSeconds(5f);
@@ -150,6 +166,8 @@ namespace SCPSLEnforcedRNG
             RoundStats = new();
             LightsOutMode = ServerConfigs.LightsOutMode;
             roundStartTime = Timing.LocalTime;
+            lastScanTime = roundStartTime;
+            LastGeneratorCheck = 0;
             ResetRoles();
 
             if (RoundCoroutines.Count > 0) foreach (var coroutine in RoundCoroutines) Timing.KillCoroutines(coroutine);
@@ -170,6 +188,50 @@ namespace SCPSLEnforcedRNG
             
         }
 
+
+        public static void ScanFacility()
+        {
+            int lczCount = 0;
+            int hczCount = 0;
+            int ezCount  = 0;
+            int lczScpCount = 0;
+            int hczScpCount = 0;
+            int ezScpCount = 0;
+            foreach (var player in PlayerInfo.playerList)
+            {
+                var playerRoom = player.PlayerPtr.Room.Zone;
+                if (player.PlayerPtr.Team==Team.SCP)
+                {
+                    if (playerRoom == Synapse.Api.Enum.ZoneType.LCZ) lczScpCount++;
+                    else if (playerRoom == Synapse.Api.Enum.ZoneType.HCZ) hczScpCount++;
+                    else if (playerRoom == Synapse.Api.Enum.ZoneType.Entrance) ezScpCount++;
+                }
+                else
+                {
+                    if (playerRoom == Synapse.Api.Enum.ZoneType.LCZ) lczCount++;
+                    else if (playerRoom == Synapse.Api.Enum.ZoneType.HCZ) hczCount++;
+                    else if (playerRoom == Synapse.Api.Enum.ZoneType.Entrance) ezCount++;
+                }
+            }
+
+            string cassieOut = "ATTENTION . CAMERA SCAN COMPLETE . ";
+
+            if (lczCount > 0) cassieOut += lczCount + " PERSONNEL . ";
+            if (lczScpCount > 0) cassieOut += lczScpCount + " SCP . ";
+            if (lczCount+lczScpCount>0) cassieOut += "DETECTED IN LIGHT CONTAINMENT ZONE . ";
+
+            if (hczCount > 0) cassieOut += hczCount + " PERSONNEL . ";
+            if (hczScpCount > 0) cassieOut += hczScpCount + " SCP . ";
+            if (hczCount + hczScpCount > 0) cassieOut += "DETECTED IN HEAVY CONTAINMENT ZONE . ";
+
+            if (ezCount > 0) cassieOut += ezCount + " PERSONNEL . ";
+            if (ezScpCount > 0) cassieOut += ezScpCount + " SCP . ";
+            if (ezCount + ezScpCount > 0) cassieOut += "DETECTED IN ENTERANCE ZONE . ";
+            if (cassieOut.Length < 40) cassieOut += "NO BODY DETECTED INSIDE THE FACILITY";
+
+            Map.Get.Cassie(cassieOut);
+
+        }
         public static int LightsOut(int amount)
         {
             OfflineRooms.Clear();
@@ -254,7 +316,7 @@ namespace SCPSLEnforcedRNG
 
             int generatorCount = 0;
             foreach (var generator in Map.Get.Generators)
-                if (generator.Active) generatorCount++;
+                if (generator.Engaged) generatorCount++;
 
             if (generatorCount == 3 && LastGeneratorCheck != 3)
             {
@@ -281,7 +343,10 @@ namespace SCPSLEnforcedRNG
         {
             foreach (var player in PlayerInfo.playerList)
                 if (player.PlayerPtr.RoleID == 2)
+                {
                     player.PlayerPtr.RoleID = 14;
+                    player.PlayerPtr.Inventory.AddItem(ItemType.Coin);
+                }
         }
         public static void TurnTutorialToSpectators()
         {
@@ -356,10 +421,12 @@ namespace SCPSLEnforcedRNG
             DebugTranslator.Console(tempOut);
 
             string roles = ServerConfigs.RolePicks.Substring(0, playerCount);
-            char[] characters = roles.ToCharArray();
-            Array.Sort(characters);
-            roles = new String(characters);
+            //char[] characters = roles.ToCharArray();
+            //Array.Sort(characters);
+            //roles = new String(characters);
             DebugTranslator.Console(roles);
+
+            Round.Get.RoundLock = true;
             for (int i = 0; i < playerCount; i++)
             {
                 switch (roles[0])
@@ -384,6 +451,7 @@ namespace SCPSLEnforcedRNG
                 }
                 roles = roles.Remove(0, 1);
             }
+            Round.Get.RoundLock = false;
 
         }
         public static void AssignSCP()
@@ -405,21 +473,21 @@ namespace SCPSLEnforcedRNG
             var selectedPlayer = tempPlayerList[tempIndex];
             selectedPlayer.roundRole = 0;
             
-            int[] scpsMinus = { 0, 3, 5, 16 };
-            int[] scpsPlus  = { 0, 3, 5, 16, 9 };
-            int[] scps = PlayerInfo.playerList.Count >= 8 ? scpsPlus : scpsMinus;
+            int[] scpsMinus = { 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16 };
+            int[] scpsPlus  = { 0, 3, 5, 16, 9, 0, 3, 5, 16, 9, 0, 3, 5, 16, 9, 0, 3, 5, 16, 9 };
+            int[] scps = PlayerInfo.playerList.Count >= 10 ? scpsPlus : scpsMinus;
 
             int tempIndexScp;
             int count = 0;
             do
             {
-                tempIndexScp = UnityEngine.Random.Range(0, scps.Length * 100);
+                tempIndexScp = UnityEngine.Random.Range(0, scps.Length);
+                DebugTranslator.Console("Random Pick: " + tempIndexScp + "\nCorresponding Pick: " + scps[tempIndexScp]);
                 count++;
-            } while (scps[tempIndexScp % scps.Length] != lastSCP || count < 4);
-            lastSCP = scps[tempIndexScp % scps.Length];
+            } while (scps[tempIndexScp] == lastSCP && count < 3);
+            lastSCP = scps[tempIndexScp];
 
-            DebugTranslator.Console("Random Pick: " + tempIndexScp + "\nCorresponding Pick: " + tempIndexScp % scps.Length);
-            selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp % scps.Length];
+            selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp];
             selectedPlayer.AddUpCounts();
 
             if (scps[tempIndexScp % scps.Length] == 16) 
@@ -487,16 +555,9 @@ namespace SCPSLEnforcedRNG
             selectedPlayer.PlayerPtr.RoleID = 15;
             selectedPlayer.AddUpCounts();
 
-            selectedPlayer.PlayerPtr.Inventory.Clear();
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.GunCrossvec);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Coin);
             selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Flashlight);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.KeycardGuard);
+            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Ammo9x19);
             selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Adrenaline);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.GrenadeFlash);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.ArmorLight);
-            for (int x = 0; x < 60; x++)
-                selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Ammo9x19);
 
             string tempText = "";
             foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";

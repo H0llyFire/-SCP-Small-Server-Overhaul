@@ -62,7 +62,7 @@ namespace SCPSLEnforcedRNG
                 "Total Chaos Spawns: " + GameTech.RoundStats.TotalCISpawns + "\n" +
                 "Total Door Interactions: " + GameTech.RoundStats.DoorInteracts + "\n" +
                 "Tesla Gate Deaths: " + GameTech.RoundStats.TeslaGateKills + "\n" +
-                "Ammount of Candy Grabbed: " + GameTech.RoundStats.CandiesGrabbed + "\n" +
+                //"Ammount of Candy Grabbed: " + GameTech.RoundStats.CandiesGrabbed + "\n" +
                 "HID Usage %: " + GameTech.RoundStats.HIDUsage + "\n";
 
             foreach (var player in PlayerInfo.playerList)
@@ -73,7 +73,7 @@ namespace SCPSLEnforcedRNG
                     "Total Kills: " + player.StatTrackRound.TotalKills + "\n" +
                     "Damage Healed: " + player.StatTrackRound.DamageHealed + "\n" +
                     "SCP Items Used: " + player.StatTrackRound.SCPItemsUsed + "\n" +
-                    "Distance Walked: " + player.StatTrackRound.DistanceWalkedMaybe + "\n" +
+                    //"Distance Walked: " + player.StatTrackRound.DistanceWalkedMaybe + "\n" +
                     "Times Respawned: " + player.StatTrackRound.TimesRespawned + "\n" +
                     "Escape Time: " + player.StatTrackRound.EscapeTime + "\n" +
                     "Door Interactions: " + player.StatTrackRound.DoorInteracts + "\n" +
@@ -123,14 +123,14 @@ namespace SCPSLEnforcedRNG
     public class RoundStatTrack
     {
         public int      TimesRonDiedToDoggoInCP     { get; set; } = 0; //WRK
-        public int      EscapedDClass               { get; set; } = 0;
-        public int      EscapedScientist            { get; set; } = 0;
+        public int      EscapedDClass               { get; set; } = 0; //RDY
+        public int      EscapedScientist            { get; set; } = 0; //RDY
         public float    TotalDamageDealt            { get; set; } = 0; //RDY
         public int      TotalMTFSpawns              { get; set; } = 0; //RDY
         public int      TotalCISpawns               { get; set; } = 0; //RDY
         public int      DoorInteracts               { get; set; } = 0; //WRK
         public int      TeslaGateKills              { get; set; } = 0; //RDY
-        public int      CandiesGrabbed              { get; set; } = 0; //???
+        //public int      CandiesGrabbed              { get; set; } = 0; //???
         public float    HIDUsage                    { get; set; } = 0; //WRK
 
     }
@@ -139,19 +139,19 @@ namespace SCPSLEnforcedRNG
         public string   PlayerID { get; set; }
         public string   PlayerName { get; set; }
 
-        public float    DamageDealt         { get; set; } = 0f; //RDY
-        public float    SCPDamageDealt      { get; set; } = 0f; //RDY
-        public int      TotalKills          { get; set; } = 0;
-        public int      DamageHealed        { get; set; } = 0;
-        public int      SCPItemsUsed        { get; set; } = 0;
-        public int      DistanceWalkedMaybe { get; set; } = 0;
-        public int      TimesRespawned      { get; set; } = 0;
-        public int      EscapeTime          { get; set; } = 0;
+        public float    DamageDealt         { get; set; } = 0f;//RDY
+        public float    SCPDamageDealt      { get; set; } = 0f;//RDY
+        public int      TotalKills          { get; set; } = 0; //RDY
+        public float    DamageHealed        { get; set; } = 0; //RDY
+        public int      SCPItemsUsed        { get; set; } = 0; //RDY
+        //public int      DistanceWalkedMaybe { get; set; } = 0; 
+        public int      TimesRespawned      { get; set; } = 0; //RDY
+        public float    EscapeTime          { get; set; } = 0f;//RDY
         public int      DoorInteracts       { get; set; } = 0; //WRK
-        public int      ShotsFired          { get; set; } = 0;
-        public ItemType HighestKeycardHeld  { get; set; } = ItemType.None;
-        public int      GeneratorsActivated { get; set; } = 0;
-        public int      GeneratorsStopped   { get; set; } = 0;
+        public int      ShotsFired          { get; set; } = 0; //RDY
+        public ItemType HighestKeycardHeld  { get; set; } = ItemType.None; //RDY
+        public int      GeneratorsActivated { get; set; } = 0; //RDY
+        public int      GeneratorsStopped   { get; set; } = 0; //RDY
         public int      CoinFlips           { get; set; } = 0; //WRK
 
         public static PlayerStatTrack operator+ (PlayerStatTrack a, PlayerStatTrack b)
@@ -163,12 +163,12 @@ namespace SCPSLEnforcedRNG
             stats.TotalKills = a.TotalKills + b.TotalKills;
             stats.DamageHealed = a.DamageHealed + b.DamageHealed;
             stats.SCPItemsUsed = a.SCPItemsUsed + b.SCPItemsUsed;
-            stats.DistanceWalkedMaybe = a.DistanceWalkedMaybe + b.DistanceWalkedMaybe;
+            //stats.DistanceWalkedMaybe = a.DistanceWalkedMaybe + b.DistanceWalkedMaybe;
             stats.TimesRespawned = a.TimesRespawned + b.TimesRespawned;
             stats.EscapeTime = a.EscapeTime > b.EscapeTime ? b.EscapeTime : a.EscapeTime;
             stats.DoorInteracts = a.DoorInteracts + b.DoorInteracts;
             stats.ShotsFired = a.ShotsFired + b.ShotsFired;
-            stats.HighestKeycardHeld = a.HighestKeycardHeld > b.HighestKeycardHeld ? a.HighestKeycardHeld : b.HighestKeycardHeld;
+            stats.HighestKeycardHeld = b.HighestKeycardHeld;
             stats.GeneratorsActivated = a.GeneratorsActivated + b.GeneratorsActivated;
             stats.GeneratorsStopped = a.GeneratorsStopped + b.GeneratorsStopped;
             stats.CoinFlips = a.CoinFlips + b.CoinFlips;

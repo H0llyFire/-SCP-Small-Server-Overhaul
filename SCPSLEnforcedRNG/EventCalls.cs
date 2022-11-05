@@ -19,15 +19,27 @@ namespace SCPSLEnforcedRNG
             SynapseController.Server.Events.Round.RoundEndEvent += OnRoundEnd;
             SynapseController.Server.Events.Round.RoundRestartEvent += OnRoundRestart;
 
+
+
             SynapseController.Server.Events.Player.PlayerJoinEvent += OnPlayerJoin;
             SynapseController.Server.Events.Player.PlayerLeaveEvent += OnPlayerLeave;
-            SynapseController.Server.Events.Player.PlayerGeneratorInteractEvent += OnGeneratorInteract;
-            SynapseController.Server.Events.Player.PlayerDeathEvent += OnPlayerDeath;
+
             SynapseController.Server.Events.Player.PlayerEscapesEvent += OnPlayerEscape;
+            SynapseController.Server.Events.Player.PlayerEscapesEvent += OnEscape;
+
+            SynapseController.Server.Events.Player.PlayerDeathEvent += OnPlayerDeath;
+            SynapseController.Server.Events.Player.PlayerDamageEvent += OnPlayerDamage;
+            SynapseController.Server.Events.Player.PlayerHealEvent += OnHeal;
+            SynapseController.Server.Events.Player.PlayerShootEvent += OnShoot;
+
+            SynapseController.Server.Events.Player.PlayerGeneratorInteractEvent += OnGeneratorInteract;
             SynapseController.Server.Events.Player.PlayerRadioInteractEvent += OnRadio;
             SynapseController.Server.Events.Player.PlayerFlipCoinEvent += OnCoinFlip;
-            SynapseController.Server.Events.Player.PlayerDamageEvent += OnPlayerDamage;
+            SynapseController.Server.Events.Player.PlayerItemUseEvent += OnItemUse;
+            SynapseController.Server.Events.Player.PlayerChangeItemEvent += OnItemChange;
             
+
+
             SynapseController.Server.Events.Map.DoorInteractEvent += OnDoor;
             SynapseController.Server.Events.Map.WarheadDetonationEvent += OnNuke;
             
@@ -37,6 +49,49 @@ namespace SCPSLEnforcedRNG
             GameTech.ServerConfigs = ServerConfigs;
         }
 
+        public static void OnItemChange(PlayerChangeItemEventArgs args)
+        {
+            List<ItemType> cards = new() { ItemType.KeycardChaosInsurgency, ItemType.KeycardNTFCommander, ItemType.KeycardFacilityManager, ItemType.KeycardContainmentEngineer, ItemType.KeycardNTFOfficer, ItemType.KeycardNTFLieutenant, ItemType.KeycardResearchCoordinator, ItemType.KeycardGuard, ItemType.KeycardZoneManager, ItemType.KeycardScientist, ItemType.KeycardJanitor};
+            if (args.NewItem.ItemCategory == ItemCategory.Keycard)
+            {
+                
+                var player = PlayerInfo.GetPlayerByID(args.Player.UserId);
+                if (cards.IndexOf(player.StatTrackRound.HighestKeycardHeld) > cards.IndexOf(args.NewItem.ItemType))
+                    player.StatTrackRound.HighestKeycardHeld = args.NewItem.ItemType;
+            }
+        }
+        public static void OnShoot(PlayerShootEventArgs args)
+        {
+            PlayerInfo.GetPlayerByID(args.Player.UserId).StatTrackRound.ShotsFired++;
+        }
+        public static void OnHeal(PlayerHealEventArgs args)
+        {
+            PlayerInfo.GetPlayerByID(args.Player.UserId).StatTrackRound.DamageHealed += args.Amount;
+            
+        }
+        public static void OnItemUse(PlayerItemInteractEventArgs args)
+        {
+            if (args.State == ItemInteractState.Finalizing)
+            {
+                List<ItemType> types = new List<ItemType>() 
+                    { ItemType.SCP018, ItemType.SCP1853, ItemType.SCP207, ItemType.SCP2176, ItemType.SCP244a, ItemType.SCP244b, ItemType.SCP268, ItemType.SCP330, ItemType.SCP500 };
+
+                if(types.Contains(args.CurrentItem.ItemType))
+                {
+                    PlayerInfo.GetPlayerByID(args.Player.UserId).StatTrackRound.SCPItemsUsed++;
+                }
+            }
+        }
+        public static void OnEscape(PlayerEscapeEventArgs args)
+        {
+                 if ( args.IsClassD && !args.IsCuffed)  GameTech.RoundStats.EscapedDClass++;
+            else if ( args.IsClassD &&  args.IsCuffed)  GameTech.RoundStats.EscapedScientist++;
+            else if (!args.IsClassD && !args.IsCuffed)  GameTech.RoundStats.EscapedScientist++;
+            else if (!args.IsClassD &&  args.IsCuffed)  GameTech.RoundStats.EscapedDClass++;
+
+            PlayerInfo.GetPlayerByID(args.Player.UserId).StatTrackRound.EscapeTime = Timing.LocalTime - GameTech.roundStartTime;
+            DebugTranslator.Console(args.Player.RoleName + " escaped.");
+        }
         public static void OnPlayerDamage(PlayerDamageEventArgs args)
         {
             /*
@@ -198,6 +253,11 @@ namespace SCPSLEnforcedRNG
                 Timing.KillCoroutines(GameTech.doggoLightsFlash);
             }
 
+            if(args.Killer!=null)
+            {
+                PlayerInfo.GetPlayerByID(args.Killer.UserId).StatTrackRound.TotalKills++;
+            }
+
 
         }
         public static void OnPlayerJoin(PlayerJoinEventArgs args)
@@ -239,6 +299,7 @@ namespace SCPSLEnforcedRNG
                 if (player.PlayerPtr.RoleID == 14)
                 {
                     args.Players.Add(player.PlayerPtr);
+                    player.StatTrackRound.TimesRespawned++;
                 }
             }
             if (args.Players.Count == 0) { DebugTranslator.Console("0 Players Waiting for respawn"); return; }
@@ -256,6 +317,8 @@ namespace SCPSLEnforcedRNG
         }
         public static void OnGeneratorInteract(PlayerGeneratorInteractEventArgs args)
         {
+            if (args.GeneratorInteraction == Synapse.Api.Enum.GeneratorInteraction.Activated) PlayerInfo.GetPlayerByID(args.Player.UserId).StatTrackRound.GeneratorsActivated++;
+            else if (args.GeneratorInteraction == Synapse.Api.Enum.GeneratorInteraction.Disabled) PlayerInfo.GetPlayerByID(args.Player.UserId).StatTrackRound.GeneratorsStopped++;
             //if (args.GeneratorInteraction == Synapse.Api.Enum.GeneratorInteraction.Activated) GameTech.CheckGeneratorsOvercharge();
         }
 

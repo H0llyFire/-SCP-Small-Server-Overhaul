@@ -18,5 +18,11 @@ namespace SCPSLEnforcedRNG
         public int StartingLightsOff { get; set; } = 12;
 
         public int GeneratorLightsOn { get; set; } = 6;
+
+
+        public bool EnableCustomRoleAssignment { get; set; } = true;
+        public bool EnableOmegaWarhead { get; set; } = true;
+        public bool EnableAfterRoundStats { get; set; } = true;
+        public bool EnableGeneratorChanges { get; set; } = true;
     }
 }
