@@ -1,0 +1,12 @@
+﻿-----------------
+Version 1.2.0
+-----------------
++ Stats
++ Rewrote Most Of My Code
++ Facility Scan
++ Left Hands appeared in the basement.
+
+? Fixed Helicopter Animation Start Time
+? Bunch More BugFixes
+
+-

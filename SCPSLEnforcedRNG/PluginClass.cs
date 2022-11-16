@@ -2,6 +2,7 @@
 using InventorySystem.Items;
 using MapGeneration;
 using MEC;
+using SCPSLEnforcedRNG.Modules;
 using Synapse;
 using Synapse.Api;
 using Synapse.Api.Events.SynapseEventArguments;
@@ -26,14 +27,15 @@ namespace SCPSLEnforcedRNG
     
 
     [PluginInformation(
-        Name = "EnforcedRNG", //The Name of Your Plugin
-        Author = "H0llyFire", // Your Name
-        Description = "The RNG Manipulator 9000. Not fit for large or public servers", // A Description of your Plugin
-        LoadPriority = 0, //When your Plugin should get loaded (use 0 if you don't know how to use it)
-        SynapseMajor = 2, //The Synapse Version for which this Plugin was created for (SynapseMajor.SynapseMinor.SynapsePatch => 2.7.0)
+        Name = "SmallServerOverhaul", 
+        Author = "H0llyFire",
+        Description = 
+            "An overhaul for small private servers. Plugin will have undefined behaviour on servers with more than 20 people, or servers with high traffic. Optimized for 7-14 players.",
+        LoadPriority = 0,
+        SynapseMajor = 2,
         SynapseMinor = 10,
         SynapsePatch = 1,
-        Version = "v.1.1.7a" //The Current Version of your Plugin
+        Version = "v.1.1.7a"
         )]
     public class PluginClass : AbstractPlugin
     {
@@ -42,8 +44,8 @@ namespace SCPSLEnforcedRNG
 
         public override void Load()
         {
-            EventCalls.SetupEvents(ServerConfigs);
             StatTrack.SetUpCurrentSession();
+            new MainModule().Activate();
             DebugTranslator.Console("PLUGIN LOADED SUCCESSFULLY", 0, true);
         }
 

@@ -29,7 +29,7 @@ namespace SCPSLEnforcedRNG
         {
             var result = new CommandResult();
             result.Message = "Scan Initiated.";
-            GameTech.ScanFacility();
+            Modules.FacilityScan.ScanFacility();
             result.State = CommandResultState.Ok;
             return result;
         }

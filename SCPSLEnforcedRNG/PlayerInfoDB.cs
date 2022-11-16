@@ -166,12 +166,39 @@ namespace SCPSLEnforcedRNG
             StatTrackSession += StatTrackRound;
         }
 
+        public uint GetRoleCount(RoleType role)
+        {
+            switch(role)
+            {
+                case RoleType.ClassD:
+                    return NotDboi;
+                case RoleType.Scientist:
+                    return NotScientist;
+                case RoleType.FacilityGuard:
+                    return NotGuard;
+                case RoleType.Scp079:
+                    return NotPC;
+                case RoleType.Scp173:
+                    return NotSCP;
+                default:
+                    return 0;
+            }
+        }
 
         public static PlayerInfo GetPlayerByID(string id)
         {
             foreach(var player in playerList)
             {
                 if (player.PlayerId == id)
+                    return player;
+            }
+            return null;
+        }
+        public static PlayerInfo GetPlayerByNick(string nick)
+        {
+            foreach (var player in playerList)
+            {
+                if (player.Name == nick)
                     return player;
             }
             return null;

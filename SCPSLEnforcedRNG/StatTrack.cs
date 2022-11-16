@@ -31,7 +31,7 @@ namespace SCPSLEnforcedRNG
             {
                 Round = currentRound++,
                 Session = currentSession,
-                RoundStats = GameTech.RoundStats,
+                RoundStats = Modules.Stats.RoundStats,
                 PlayerStats = playersStats
 
             });
@@ -54,16 +54,16 @@ namespace SCPSLEnforcedRNG
         public static void PrintOutStats()
         {
             string roundStats =
-                "Times Roun died to the fucking dough: " + GameTech.RoundStats.TimesRonDiedToDoggoInCP + "\n" +
-                "Escaped D-Bois: " + GameTech.RoundStats.EscapedDClass + "\n" +
-                "Escaped Science-Bois: " + GameTech.RoundStats.EscapedScientist + "\n" +
-                "Total Damage Dealt: " + GameTech.RoundStats.TotalDamageDealt + "\n" +
-                "Total MTF Spawns: " + GameTech.RoundStats.TotalMTFSpawns + "\n" +
-                "Total Chaos Spawns: " + GameTech.RoundStats.TotalCISpawns + "\n" +
-                "Total Door Interactions: " + GameTech.RoundStats.DoorInteracts + "\n" +
-                "Tesla Gate Deaths: " + GameTech.RoundStats.TeslaGateKills + "\n" +
+                "Times Roun died to the fucking dough: " + Modules.Stats.RoundStats.TimesRonDiedToDoggoInCP + "\n" +
+                "Escaped D-Bois: " + Modules.Stats.RoundStats.EscapedDClass + "\n" +
+                "Escaped Science-Bois: " + Modules.Stats.RoundStats.EscapedScientist + "\n" +
+                "Total Damage Dealt: " + Modules.Stats.RoundStats.TotalDamageDealt + "\n" +
+                "Total MTF Spawns: " + Modules.Stats.RoundStats.TotalMTFSpawns + "\n" +
+                "Total Chaos Spawns: " + Modules.Stats.RoundStats.TotalCISpawns + "\n" +
+                "Total Door Interactions: " + Modules.Stats.RoundStats.DoorInteracts + "\n" +
+                "Tesla Gate Deaths: " + Modules.Stats.RoundStats.TeslaGateKills + "\n" +
                 //"Ammount of Candy Grabbed: " + GameTech.RoundStats.CandiesGrabbed + "\n" +
-                "HID Usage %: " + GameTech.RoundStats.HIDUsage + "\n";
+                "HID Usage %: " + Modules.Stats.RoundStats.HIDUsage + "\n";
 
             foreach (var player in PlayerInfo.playerList)
             {
@@ -96,8 +96,8 @@ namespace SCPSLEnforcedRNG
         public int Round { get; set; } = 0;
         public int Session { get; set; } = 0;
 
-        public RoundStatTrack RoundStats { get; set; }
-        public List<PlayerStatTrack> PlayerStats { get; set; }
+        public RoundStatTrack? RoundStats { get; set; }
+        public List<PlayerStatTrack>? PlayerStats { get; set; }
 
         public int GetId() => Id;
     }
@@ -136,8 +136,8 @@ namespace SCPSLEnforcedRNG
     }
     public class PlayerStatTrack
     {
-        public string   PlayerID { get; set; }
-        public string   PlayerName { get; set; }
+        public string?  PlayerID { get; set; }
+        public string?  PlayerName { get; set; }
 
         public float    DamageDealt         { get; set; } = 0f;//RDY
         public float    SCPDamageDealt      { get; set; } = 0f;//RDY

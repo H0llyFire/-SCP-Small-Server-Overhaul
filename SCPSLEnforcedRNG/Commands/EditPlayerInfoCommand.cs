@@ -46,7 +46,8 @@ namespace SCPSLEnforcedRNG
             }
 
 
-            var player = PlayerInfo.repository.FindByNickname(context.Arguments.ElementAt(0));
+            //var player = PlayerInfo.repository.FindByNickname(context.Arguments.ElementAt(0));
+            var player = PlayerInfo.GetPlayerByNick(context.Arguments.ElementAt(0));
             if (player == null)
             {
                 result.Message = "Invalid Player";
@@ -75,6 +76,7 @@ namespace SCPSLEnforcedRNG
                 case "scp":
                 case "notscp":
                     player.NotSCP = (uint)newValue;
+                    
                     tempInfo = "SCP";
                     tempVal = player.NotSCP;
                     break;

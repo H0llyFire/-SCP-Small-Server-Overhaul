@@ -10,7 +10,7 @@ namespace SCPSLEnforcedRNG
 
         public static void Console(string message, int messageType = 0, bool forced = false)  //Message Types: 0 Info | 1 Warn | 2 Error
         {
-            if (!(GameTech.ServerConfigs.ShowDebugInConsole || forced)) return;
+            if (!(Modules.MainModule.ServerConfigs.ShowDebugInConsole || forced)) return;
             switch(messageType)
             {
                 case 0:

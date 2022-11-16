@@ -67,19 +67,19 @@ namespace SCPSLEnforcedRNG
                 switch(context.Arguments.ElementAt(0))
                 {
                     case "RolePicks":
-                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.RolePicks;
-                        else if (context.Arguments.ElementAt(1).ToLower() == "default") GameTech.ServerConfigs.RolePicks = "303242334312303432";
+                        if (context.Arguments.Count == 1) tempResultText = Modules.MainModule.ServerConfigs.RolePicks;
+                        else if (context.Arguments.ElementAt(1).ToLower() == "default") Modules.MainModule.ServerConfigs.RolePicks = "303242334312303432";
                         else
                         {
                             IEnumerable<char> allowedInputs = "01234";
-                            if (context.Arguments.ElementAt(1).All(allowedInputs.Contains)) GameTech.ServerConfigs.RolePicks = context.Arguments.ElementAt(1);
+                            if (context.Arguments.ElementAt(1).All(allowedInputs.Contains)) Modules.MainModule.ServerConfigs.RolePicks = context.Arguments.ElementAt(1);
                             else tempResultText = "Invalid Value";
                         }
                         break;
 
                     case "ChaosChance":
-                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.chaosChance.ToString();
-                        else if (context.Arguments.ElementAt(1).ToLower() == "default") GameTech.ServerConfigs.chaosChance = 0.25f;
+                        if (context.Arguments.Count == 1) tempResultText = Modules.MainModule.ServerConfigs.chaosChance.ToString();
+                        else if (context.Arguments.ElementAt(1).ToLower() == "default") Modules.MainModule.ServerConfigs.chaosChance = 0.25f;
                         else
                         {
                             float newValue;
@@ -89,14 +89,14 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            if (newValue >= 0f && newValue <= 1f) GameTech.ServerConfigs.chaosChance = newValue;
+                            if (newValue >= 0f && newValue <= 1f) Modules.MainModule.ServerConfigs.chaosChance = newValue;
                             else tempResultText = "Invalid Value";
                         }
                         break;
 
                     case "RespawnTime":
-                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.respawnTime.ToString();
-                        else if (context.Arguments.ElementAt(1).ToLower() == "default") GameTech.ServerConfigs.respawnTime = 420;
+                        if (context.Arguments.Count == 1) tempResultText = Modules.MainModule.ServerConfigs.respawnTime.ToString();
+                        else if (context.Arguments.ElementAt(1).ToLower() == "default") Modules.MainModule.ServerConfigs.respawnTime = 420;
                         else
                         {
                             int newValue;
@@ -106,13 +106,13 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            GameTech.ServerConfigs.respawnTime = newValue;
+                            Modules.MainModule.ServerConfigs.respawnTime = newValue;
                         }
                         break;
 
                     case "RespawnTimeRange":
-                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.respawnTimeRange.ToString();
-                        else if (context.Arguments.ElementAt(1).ToLower() == "default") GameTech.ServerConfigs.respawnTimeRange = 30;
+                        if (context.Arguments.Count == 1) tempResultText = Modules.MainModule.ServerConfigs.respawnTimeRange.ToString();
+                        else if (context.Arguments.ElementAt(1).ToLower() == "default") Modules.MainModule.ServerConfigs.respawnTimeRange = 30;
                         else
                         {
                             int newValue;
@@ -122,13 +122,13 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            GameTech.ServerConfigs.respawnTimeRange = newValue;
+                            Modules.MainModule.ServerConfigs.respawnTimeRange = newValue;
                         }
                         break;
 
                     case "LightsOutMode":
-                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.LightsOutMode.ToString();
-                        else if (context.Arguments.ElementAt(1).ToLower() == "default") GameTech.ServerConfigs.LightsOutMode = false;
+                        if (context.Arguments.Count == 1) tempResultText = Modules.MainModule.ServerConfigs.LightsOutMode.ToString();
+                        else if (context.Arguments.ElementAt(1).ToLower() == "default") Modules.MainModule.ServerConfigs.LightsOutMode = false;
                         else
                         {
                             bool newValue;
@@ -138,13 +138,13 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            GameTech.ServerConfigs.LightsOutMode = newValue;
+                            Modules.MainModule.ServerConfigs.LightsOutMode = newValue;
                         }
                         break;
 
                     case "StartingLightsOff":
-                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.StartingLightsOff.ToString();
-                        else if (context.Arguments.ElementAt(1).ToLower() == "default") GameTech.ServerConfigs.StartingLightsOff = 12;
+                        if (context.Arguments.Count == 1) tempResultText = Modules.MainModule.ServerConfigs.StartingLightsOff.ToString();
+                        else if (context.Arguments.ElementAt(1).ToLower() == "default") Modules.MainModule.ServerConfigs.StartingLightsOff = 12;
                         else
                         {
                             int newValue;
@@ -154,13 +154,13 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            GameTech.ServerConfigs.StartingLightsOff = newValue;
+                            Modules.MainModule.ServerConfigs.StartingLightsOff = newValue;
                         }
                         break;
 
                     case "GeneratorLightsOn":
-                        if (context.Arguments.Count == 1) tempResultText = GameTech.ServerConfigs.GeneratorLightsOn.ToString();
-                        else if (context.Arguments.ElementAt(1).ToLower() == "default") GameTech.ServerConfigs.GeneratorLightsOn = 6;
+                        if (context.Arguments.Count == 1) tempResultText = Modules.MainModule.ServerConfigs.GeneratorLightsOn.ToString();
+                        else if (context.Arguments.ElementAt(1).ToLower() == "default") Modules.MainModule.ServerConfigs.GeneratorLightsOn = 6;
                         else
                         {
                             int newValue;
@@ -170,7 +170,7 @@ namespace SCPSLEnforcedRNG
                                 tempResultText = "Invalid Value";
                                 break;
                             }
-                            GameTech.ServerConfigs.GeneratorLightsOn = newValue;
+                            Modules.MainModule.ServerConfigs.GeneratorLightsOn = newValue;
                         }
                         break;
 

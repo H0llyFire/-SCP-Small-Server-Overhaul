@@ -28,7 +28,7 @@ namespace SCPSLEnforcedRNG
 
         public CommandResult Execute(CommandContext context)
         {
-            bool isChaos = UnityEngine.Random.Range(0f, 1f) + GameTech.ServerConfigs.chaosChance > 1f;
+            bool isChaos = UnityEngine.Random.Range(0f, 1f) + Modules.MainModule.ServerConfigs.chaosChance > 1f;
             var result = new CommandResult();
 
             result.Message = "Initiating Respawn Sequence";
