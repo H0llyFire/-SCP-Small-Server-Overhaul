@@ -67,7 +67,7 @@ namespace SCPSLEnforcedRNG
 
             foreach (var player in PlayerInfo.playerList)
             {
-                string playerStats = 
+                string playerStats =
                     "Damage Dealt: " + player.StatTrackRound.DamageDealt + "\n" +
                     "Damage Dealt to SCP: " + player.StatTrackRound.SCPDamageDealt + "\n" +
                     "Total Kills: " + player.StatTrackRound.TotalKills + "\n" +
@@ -78,16 +78,59 @@ namespace SCPSLEnforcedRNG
                     "Escape Time: " + player.StatTrackRound.EscapeTime + "\n" +
                     "Door Interactions: " + player.StatTrackRound.DoorInteracts + "\n" +
                     "Shots Fired: " + player.StatTrackRound.ShotsFired + "\n" +
-                    "Highest Keycard Held: " + player.StatTrackRound.HighestKeycardHeld + "\n" +
+                    "Highest Keycard Held: " + ResolveCardName(player.StatTrackRound.HighestKeycardHeld) + "\n" +
                     "Generators Activated: " + player.StatTrackRound.GeneratorsActivated + "\n" +
                     "Generators Stopped: " + player.StatTrackRound.GeneratorsStopped + "\n" +
                     "Coin Flips: " + player.StatTrackRound.CoinFlips + "\n";
-                
+                string outStatsWin =
+                    "Damage Dealt: " + player.StatTrackRound.DamageDealt + "\n" +
+                    "Damage Dealt to SCP: " + player.StatTrackRound.SCPDamageDealt + "\n" +
+                    "Total Kills: " + player.StatTrackRound.TotalKills + "\n" +
+                    "Escape Time: " + player.StatTrackRound.EscapeTime + "\n" +
+                    "Shots Fired: " + player.StatTrackRound.ShotsFired + "\n" +
+                    "Highest Keycard Held: " + ResolveCardName(player.StatTrackRound.HighestKeycardHeld) + "\n" +
+                    "Total Door Interactions: " + Modules.Stats.RoundStats.DoorInteracts + "\n";
+
+
+
                 player.PlayerPtr.SendConsoleMessage(DebugTranslator.TranslatePrefix(roundStats), "green");
                 player.PlayerPtr.SendConsoleMessage(DebugTranslator.TranslatePrefix(playerStats), "yellow");
-                
+                player.PlayerPtr.OpenReportWindow(outStatsWin);
             }
-            Map.Get.SendBroadcast(10, "Check Stats In Console (~)");
+            Map.Get.SendBroadcast(10, "More Stats In Console (~)");
+        }
+        private static string ResolveCardName(ItemType card)
+        {
+            switch(card)
+            {
+                case ItemType.KeycardJanitor:
+                    return "Janitor";
+                case ItemType.KeycardChaosInsurgency:
+                    return "Chaos";
+                case ItemType.KeycardContainmentEngineer:
+                    return "Containment Engineer";
+                case ItemType.KeycardFacilityManager:
+                    return "Facility Manager";
+                case ItemType.KeycardGuard:
+                    return "Guard";
+                case ItemType.KeycardNTFCommander:
+                    return "MTF Captain";
+                case ItemType.KeycardNTFLieutenant:
+                    return "MTF Private";
+                case ItemType.KeycardNTFOfficer:
+                    return "MTF Sergeant";
+                case ItemType.KeycardO5:
+                    return "05";
+                case ItemType.KeycardResearchCoordinator:
+                    return "Research Supervisor";
+                case ItemType.KeycardScientist:
+                    return "Scientist";
+                case ItemType.KeycardZoneManager:
+                    return "Zone Manager";
+                case ItemType.None:
+                default:
+                    return "None";
+            }
         }
     }
     public class StatsDB : IDatabaseEntity
@@ -116,6 +159,7 @@ namespace SCPSLEnforcedRNG
             catch
             {
                 return null;
+                
             }
         }
     }

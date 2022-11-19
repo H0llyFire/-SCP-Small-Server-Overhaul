@@ -15,8 +15,6 @@ namespace SCPSLEnforcedRNG
     //TODO:
     //New class xd Chaos Guard (chance for a guard to be Chaos with the skin of a guard (amogus)
     //Make preffered role system
-    //4th respawn Zetta Wave?
-    //Game stats, advanced debug system
 
     //SCP Blackout? Open and Lockdown of doors + darkness
 
@@ -35,12 +33,12 @@ namespace SCPSLEnforcedRNG
         SynapseMajor = 2,
         SynapseMinor = 10,
         SynapsePatch = 1,
-        Version = "v.1.1.7a"
+        Version = "v.1.2.0"
         )]
     public class PluginClass : AbstractPlugin
     {
-        [Config(section = "EnforcedRNG")]
-        public static PluginConfig ServerConfigs { get; set; }
+        [Config(section = "SmallServerOverhaul")]
+        public static PluginConfig? ServerConfigs { get; set; }
 
         public override void Load()
         {

@@ -4,9 +4,12 @@ Version 1.2.0
 + Stats
 + Rewrote Most Of My Code
 + Facility Scan
-+ Left Hands appeared in the basement.
++ Left Hands appeared in the basement
++ Workstations ARE INSTANT
++ SCP 914 (Upgrader) starts on 1:1
 
 ? Fixed Helicopter Animation Start Time
 ? Bunch More BugFixes
+? Doggo AntiCamp has higher wait time Outside
 
 -

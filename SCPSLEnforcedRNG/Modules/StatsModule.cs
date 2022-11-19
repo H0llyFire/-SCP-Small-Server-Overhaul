@@ -46,8 +46,8 @@ namespace SCPSLEnforcedRNG.Modules
 
         //-------------------------------------------------------------------------------
         //Main
-        public static RoundStatTrack RoundStats { get; set; }
-        public static PlayerStatTrack BestUserStats { get; set; }
+        public static RoundStatTrack? RoundStats { get; set; }
+        public static PlayerStatTrack? BestUserStats { get; set; }
 
         public static void SaveStats()
         {
@@ -144,20 +144,20 @@ namespace SCPSLEnforcedRNG.Modules
         public static void TrackDamage(PlayerDamageEventArgs args)
         {
             if (args.Killer == null) return;
-            if 
+            if
             (
-                args.Victim.RoleType == RoleType.Scp049   || 
-                args.Victim.RoleType == RoleType.Scp173   || 
-                args.Victim.RoleType == RoleType.Scp096   ||
-                args.Victim.RoleType == RoleType.Scp106   ||
+                args.Victim.RoleType == RoleType.Scp049 ||
+                args.Victim.RoleType == RoleType.Scp173 ||
+                args.Victim.RoleType == RoleType.Scp096 ||
+                args.Victim.RoleType == RoleType.Scp106 ||
                 args.Victim.RoleType == RoleType.Scp93953 ||
                 args.Victim.RoleType == RoleType.Scp93989 ||
                 args.Victim.RoleType == RoleType.Scp0492
             )
-                PlayerInfo.GetPlayerByID(args.Killer.UserId).StatTrackRound.SCPDamageDealt += args.Damage;
+                PlayerInfo.GetPlayerByID(args.Killer.UserId).StatTrackRound.SCPDamageDealt += args.Damage > args.Victim.Health ? args.Victim.Health : args.Damage;
             else
-                PlayerInfo.GetPlayerByID(args.Killer.UserId).StatTrackRound.DamageDealt += args.Damage;
-            RoundStats.TotalDamageDealt += args.Damage;
+                PlayerInfo.GetPlayerByID(args.Killer.UserId).StatTrackRound.DamageDealt += args.Damage > args.Victim.Health ? args.Victim.Health : args.Damage;
+            RoundStats.TotalDamageDealt += args.Damage > args.Victim.Health ? args.Victim.Health : args.Damage;
             
         }
         public static void TrackCoinFlips(PlayerFlipCoinEventArgs args)

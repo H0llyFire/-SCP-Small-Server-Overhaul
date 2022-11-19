@@ -31,6 +31,7 @@ namespace SCPSLEnforcedRNG.Modules
                 //DebugTranslator.Console("Pick: " + pick);
 
                 if (pick % 10 == 0 && args.Player.Scale.x >= 0) args.Player.Scale = new(args.Player.Scale.x * -1, args.Player.Scale.y, args.Player.Scale.z);
+                
             }
 
         }

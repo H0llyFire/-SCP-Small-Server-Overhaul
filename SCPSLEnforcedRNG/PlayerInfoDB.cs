@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace SCPSLEnforcedRNG
 {
@@ -37,7 +38,8 @@ namespace SCPSLEnforcedRNG
         }
     }
 
-    public class PlayerInfo
+    //Make A Component and rewrite a lot of shit to be easier to access :))))))
+    public class PlayerInfo// : MonoBehaviour
     {
         public static PlayerRepository repository = new();
         public static List<PlayerInfo> playerList = new();

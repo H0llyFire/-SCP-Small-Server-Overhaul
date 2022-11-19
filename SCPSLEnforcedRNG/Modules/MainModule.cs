@@ -20,6 +20,7 @@ namespace SCPSLEnforcedRNG.Modules
             SynapseController.Server.Events.Player.PlayerJoinEvent += CommitPlayer;
             SynapseController.Server.Events.Player.PlayerLeaveEvent += RemovePlayer;
             SynapseController.Server.Events.Round.RoundEndEvent += ClearPlayers;
+            SynapseController.Server.Events.Round.RoundRestartEvent += ClearPlayers;
             
             ReadyModules.Add(this);
             if (ServerConfigs.BetterRolePicksModuleActive) ReadyModules.Add(new BetterRolePicks());
@@ -99,7 +100,26 @@ namespace SCPSLEnforcedRNG.Modules
         }
         public void ClearPlayers()
         {
-            PlayerInfo.playerList.Clear();
+            Timing.CallDelayed(1f, () => { PlayerInfo.playerList.Clear(); });
+        }
+
+        //-------------------------------------------------------------------------------
+        //RANDOMS
+        public static int RandomTimeExclusive()
+        {
+            float x = Timing.LocalTime;
+            return (int)x;
+        }
+        public static int RandomTimeExclusive(int max)
+        {
+            float x = Timing.LocalTime;
+            return ((int)x) % (max + 1);
+        }
+        public static int RandomTimeExclusive(int min, int max)
+        {
+            if (min > max) {DebugTranslator.Console("Random Generation Failed: MIN > MAX"); return min - 1; }
+            float x = Timing.LocalTime;
+            return (((int)x) + min) % (max + 1);
         }
     }
 }

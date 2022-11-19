@@ -41,7 +41,7 @@ namespace SCPSLEnforcedRNG.Modules
                 if (!(Map.Get.Nuke.Detonated || Map.Get.Nuke.Active))
                     TurnSpectatorsToTutorial();
 
-                yield return Timing.WaitForSeconds(isChaos?10f:12.3f);
+                yield return Timing.WaitForSeconds(isChaos?10f:14f);
                 if ((!Map.Get.Nuke.Detonated) && MainModule.GetRoleAmount(14) > 0)
                     Round.Get.SpawnVehicle(isChaos);
                 else TurnTutorialToSpectators();

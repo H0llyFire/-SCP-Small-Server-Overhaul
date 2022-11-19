@@ -1,4 +1,5 @@
 ﻿using Synapse.Config;
+using System.ComponentModel;
 
 namespace SCPSLEnforcedRNG 
 { 

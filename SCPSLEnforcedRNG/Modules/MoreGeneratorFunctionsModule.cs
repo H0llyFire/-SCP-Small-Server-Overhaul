@@ -101,6 +101,7 @@ namespace SCPSLEnforcedRNG.Modules
             {
                 int x = UnityEngine.Random.Range(0, OfflineRooms.Count - 1);
                 OfflineRooms[x].LightController.NetworkLightsEnabled = true;
+                //OfflineRooms[x].LightController.gameObject.
                 OfflineRooms.RemoveAt(x);
             }
             DebugTranslator.Console(amount + " Lights turned On");

@@ -14,7 +14,7 @@ namespace SCPSLEnforcedRNG.Modules
         public override string ModuleName { get { return "AntiCamp"; } }
         public override void Activate()
         {
-            return;
+            SynapseController.Server.Events.Player.PlayerDeathEvent += CheckDoggoLiving;
         }
         public override void SetUpRound()
         {
@@ -24,20 +24,12 @@ namespace SCPSLEnforcedRNG.Modules
 
         //-------------------------------------------------------------------------------
         //Main
-        private static PlayerInfo doggoPtr;
         private static Room doggoRoom;
         private static int doggoCounter;
+        public static PlayerInfo doggoPtr;
         public static CoroutineHandle doggoLightsFlash;
         public static CoroutineHandle doggoAlive;
 
-        public static void CheckDoggoLiving(PlayerDeathEventArgs args)
-        {
-            if (args.Victim.RoleType == RoleType.Scp93953)
-            {
-                Timing.KillCoroutines(doggoAlive);
-                Timing.KillCoroutines(doggoLightsFlash);
-            }
-        }
         public static IEnumerator<float> DoggoCampTimer()
         { //10s; 2s check
             for (; ; )
@@ -75,12 +67,23 @@ namespace SCPSLEnforcedRNG.Modules
         {
             for (; ; )
             {
-                if (doggoRoom.RoomType != RoomName.Outside)
+                if (doggoRoom.RoomType == RoomName.Outside)
                     yield return Timing.WaitForSeconds(20f);
                 if ((!MoreGeneratorFunctions.OfflineRooms.Contains(doggoRoom)))
                     doggoRoom.LightsOut(0.2f);
                 //DebugTranslator.Console("FLASH");
                 yield return Timing.WaitForSeconds(5f);
+            }
+        }
+
+        //-------------------------------------------------------------------------------
+        //Events
+        public static void CheckDoggoLiving(PlayerDeathEventArgs args)
+        {
+            if (args.Victim.RoleType == RoleType.Scp93953)
+            {
+                Timing.KillCoroutines(doggoAlive);
+                Timing.KillCoroutines(doggoLightsFlash);
             }
         }
     }

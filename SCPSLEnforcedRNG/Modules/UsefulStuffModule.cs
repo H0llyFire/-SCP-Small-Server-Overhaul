@@ -1,4 +1,6 @@
-﻿using Synapse.Api.Events.SynapseEventArguments;
+﻿using MEC;
+using Synapse.Api;
+using Synapse.Api.Events.SynapseEventArguments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +17,18 @@ namespace SCPSLEnforcedRNG.Modules
         public override void Activate()
         {
             SynapseController.Server.Events.Player.PlayerRadioInteractEvent += OnRadio;
-            SynapseController.Server.Events.Map.DoorInteractEvent += CuffInteract;
+            //SynapseController.Server.Events.Map.DoorInteractEvent += CuffInteract;
+            SynapseController.Server.Events.Player.PlayerStartWorkstationEvent += InstaStartWorkStation;
         }
+        public override void SetUpRound()
+        {
+            Map.Get.Scp914.KnobState = Scp914.Scp914KnobSetting.OneToOne;
+            //Map.Get.IntercomText = "";
+        }
+
+        //-------------------------------------------------------------------------------
+        //Main
+        public static CoroutineHandle SpectatorRespawnTimer { get; set; }
 
         //-------------------------------------------------------------------------------
         //Events
@@ -26,7 +38,12 @@ namespace SCPSLEnforcedRNG.Modules
         }
         public void CuffInteract(DoorInteractEventArgs args)
         {
+            DebugTranslator.Console("Door interacted");
             if (args.Player.IsCuffed && !args.Door.IsDestroyed && !args.Door.Locked) args.Door.Open = !args.Door.Open;
+        }
+        public void InstaStartWorkStation(PlayerStartWorkstationEventArgs args)
+        {
+            args.WorkStation.State = Synapse.Api.Enum.WorkstationState.Online;
         }
     }
 }

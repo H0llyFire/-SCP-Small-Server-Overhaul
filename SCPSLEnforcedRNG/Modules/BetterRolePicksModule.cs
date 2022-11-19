@@ -130,7 +130,7 @@ namespace SCPSLEnforcedRNG.Modules
 
             int[] scpsMinus = { 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16 };
             int[] scpsPlus = { 0, 3, 5, 16, 9, 0, 3, 5, 16, 9, 0, 3, 5, 16, 9, 0, 3, 5, 16, 9 };
-            int[] scps = PlayerInfo.playerList.Count >= 10 ? scpsPlus : scpsMinus;
+            int[] scps = PlayerInfo.playerList.Count >= 20 ? scpsPlus : scpsMinus;
 
             int tempIndexScp;
             int count = 0;
@@ -139,11 +139,13 @@ namespace SCPSLEnforcedRNG.Modules
                 tempIndexScp = UnityEngine.Random.Range(0, scps.Length);
                 DebugTranslator.Console("Random Pick: " + tempIndexScp + "\nCorresponding Pick: " + scps[tempIndexScp]);
                 count++;
-            } while (scps[tempIndexScp] == lastSCP && count < 3);
+            } while (scps[tempIndexScp] == lastSCP && count < 2);
             lastSCP = scps[tempIndexScp];
 
             selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp];
             selectedPlayer.AddUpCounts();
+
+            if (scps[tempIndexScp] == 16) AntiCamp.doggoPtr = selectedPlayer; AntiCamp.doggoAlive = Timing.RunCoroutine(AntiCamp.DoggoCampTimer());
 
             string tempText = "";
             foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
@@ -284,25 +286,19 @@ namespace SCPSLEnforcedRNG.Modules
                 "Rolled Scientist with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
         }
 
-        private static void AssignHumanRole(RoleType role, PlayerInfo? forcedPlayer = null)
-        {
+        private static void AssignSpawnRole(RoleType role, PlayerInfo? forcedPlayer = null)
+        { //Change rolls to be more rng instead of forcing a queue
             uint tempVal = 0;
             List<PlayerInfo> tempPlayerList = new();
             foreach (var player in PlayerInfo.playerList)
             {
-                player.GetRoleCount(role);
-
-
-
-
-                if (player.PlayerId == PlayerInfo.AlexID) continue;
-                if (player.roundRole == -1 && tempVal < player.NotGuard)
+                if (player.roundRole != -1) continue;
+                for(uint x = player.GetRoleCount(role);x>0;x--)
                 {
-                    tempVal = player.NotGuard;
-                    tempPlayerList.Clear();
+                    tempPlayerList.Add(player);
                 }
-                if (player.roundRole == -1 && tempVal == player.NotGuard) tempPlayerList.Add(player);
             }
+
             int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
             var selectedPlayer = tempPlayerList[tempIndex];
 
