@@ -28,7 +28,9 @@ namespace SCPSLEnforcedRNG
         public CommandResult Execute(CommandContext context)
         {
             var result = new CommandResult();
-            result.Message = DebugTranslator.TranslatePrefix("Time Remaining: " + (Modules.BetterRespawns.respawnTimer-Timing.LocalTime));
+            float timeRem = (Modules.BetterRespawns.respawnTimer - Timing.LocalTime);
+            result.Message = DebugTranslator.TranslatePrefix("Time Remaining: " + timeRem);
+            DebugTranslator.Console(context.Player.NickName + " requested Respawn Time.\nOutput = " + timeRem +"\nCurrent Time = " + Timing.LocalTime);
             result.State = CommandResultState.Ok;
             return result;
         }

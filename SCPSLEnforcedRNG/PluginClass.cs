@@ -33,7 +33,7 @@ namespace SCPSLEnforcedRNG
         SynapseMajor = 2,
         SynapseMinor = 10,
         SynapsePatch = 1,
-        Version = "v.1.2.0"
+        Version = "v.1.2.0a"
         )]
     public class PluginClass : AbstractPlugin
     {

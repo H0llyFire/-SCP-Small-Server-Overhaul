@@ -65,13 +65,13 @@ namespace SCPSLEnforcedRNG.Modules
 
         //-------------------------------------------------------------------------------
         //Main
-        public static int lastSCP = -1;
+        public static RoleType lastSCP = RoleType.None;
 
         public static void ResetRoles()
         {
             foreach (var player in PlayerInfo.playerList)
             {
-                player.roundRole = -1;
+                player.roundRole = RoleType.None;
             }
         }
 
@@ -87,19 +87,19 @@ namespace SCPSLEnforcedRNG.Modules
                 switch (roles[0])
                 {
                     case '0':
-                        AssignSCP();
+                        AssignSpawnRole(RoleType.Scp173);
                         break;
                     case '1':
-                        AssignPC();
+                        AssignSpawnRole(RoleType.Scp079);
                         break;
                     case '2':
-                        AssignGuard();
+                        AssignSpawnRole(RoleType.FacilityGuard);
                         break;
                     case '3':
-                        AssignDBoi();
+                        AssignSpawnRole(RoleType.ClassD);
                         break;
                     case '4':
-                        AssignScientist();
+                        AssignSpawnRole(RoleType.Scientist);
                         break;
                     default:
                         break;
@@ -109,216 +109,63 @@ namespace SCPSLEnforcedRNG.Modules
             Round.Get.RoundLock = false;
 
         }
-        private static void AssignSCP()
-        {
-            uint tempVal = 0;
-            List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in PlayerInfo.playerList)
-            {
-                if (player.PlayerId == PlayerInfo.AlexID) continue;
-                if (tempVal < player.NotSCP)
-                {
-                    tempVal = player.NotSCP;
-                    tempPlayerList.Clear();
-                }
-                if (player.roundRole == -1 && tempVal == player.NotSCP) tempPlayerList.Add(player);
-            }
-
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
-            var selectedPlayer = tempPlayerList[tempIndex];
-            selectedPlayer.roundRole = 0;
-
-            int[] scpsMinus = { 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16, 0, 3, 5, 16 };
-            int[] scpsPlus = { 0, 3, 5, 16, 9, 0, 3, 5, 16, 9, 0, 3, 5, 16, 9, 0, 3, 5, 16, 9 };
-            int[] scps = PlayerInfo.playerList.Count >= 20 ? scpsPlus : scpsMinus;
-
-            int tempIndexScp;
-            int count = 0;
-            do
-            {
-                tempIndexScp = UnityEngine.Random.Range(0, scps.Length);
-                DebugTranslator.Console("Random Pick: " + tempIndexScp + "\nCorresponding Pick: " + scps[tempIndexScp]);
-                count++;
-            } while (scps[tempIndexScp] == lastSCP && count < 2);
-            lastSCP = scps[tempIndexScp];
-
-            selectedPlayer.PlayerPtr.RoleID = scps[tempIndexScp];
-            selectedPlayer.AddUpCounts();
-
-            if (scps[tempIndexScp] == 16) AntiCamp.doggoPtr = selectedPlayer; AntiCamp.doggoAlive = Timing.RunCoroutine(AntiCamp.DoggoCampTimer());
-
-            string tempText = "";
-            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
-
-            DebugTranslator.Console(
-                tempText + " were deemed WORTHY\n" +
-                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
-                "Rolled SCP with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
-        }
-        private static void AssignPC()
-        {
-            uint tempVal = 0;
-            List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in PlayerInfo.playerList)
-            {
-                if (player.PlayerId == PlayerInfo.AlexID) continue;
-                if (player.roundRole == -1 && tempVal < player.NotPC)
-                {
-                    tempVal = player.NotPC;
-                    tempPlayerList.Clear();
-                }
-                if (player.roundRole == -1 && tempVal == player.NotPC) tempPlayerList.Add(player);
-            }
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
-            var selectedPlayer = tempPlayerList[tempIndex];
-
-            selectedPlayer.roundRole = 1;
-            selectedPlayer.PlayerPtr.RoleType = RoleType.Scp079;
-            selectedPlayer.AddUpCounts();
-
-            string tempText = "";
-            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
-
-            DebugTranslator.Console(
-                tempText + " were deemed WORTHY\n" +
-                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
-                "Rolled PC with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
-        }
-        private static void AssignGuard()
-        {
-            uint tempVal = 0;
-            List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in PlayerInfo.playerList)
-            {
-                if (player.PlayerId == PlayerInfo.AlexID) continue;
-                if (player.roundRole == -1 && tempVal < player.NotGuard)
-                {
-                    tempVal = player.NotGuard;
-                    tempPlayerList.Clear();
-                }
-                if (player.roundRole == -1 && tempVal == player.NotGuard) tempPlayerList.Add(player);
-            }
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
-            var selectedPlayer = tempPlayerList[tempIndex];
-
-            selectedPlayer.roundRole = 2;
-            selectedPlayer.PlayerPtr.RoleID = 15;
-            selectedPlayer.AddUpCounts();
-
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Flashlight);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Ammo9x19);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Adrenaline);
-
-            string tempText = "";
-            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
-
-            DebugTranslator.Console(
-                tempText + " were deemed WORTHY\n" +
-                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
-                "Rolled Guard with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
-        }
-        private static void AssignDBoi()
-        {
-            uint tempVal = 0;
-            List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in PlayerInfo.playerList)
-            {
-                if (player.PlayerId == PlayerInfo.AlexID && player.roundRole == -1)
-                {
-                    tempPlayerList.Clear();
-                    tempPlayerList.Add(player);
-                    break;
-                }
-                //DebugTranslator.Console("Check " + player.Index);
-                if (player.roundRole == -1 && tempVal < player.NotDboi)
-                {
-                    tempVal = player.NotDboi;
-                    tempPlayerList.Clear();
-                }
-                if (player.roundRole == -1 && tempVal == player.NotDboi) tempPlayerList.Add(player);
-            }
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
-            var selectedPlayer = tempPlayerList[tempIndex];
-
-            selectedPlayer.roundRole = 3;
-            selectedPlayer.PlayerPtr.RoleID = 1;
-            selectedPlayer.AddUpCounts();
-            selectedPlayer.PlayerPtr.Inventory.AddItem(15);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(35);
-
-            string tempText = "";
-            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
-
-            DebugTranslator.Console(
-                tempText + " were deemed WORTHY\n" +
-                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
-                "Rolled DBoi with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
-        }
-        private static void AssignScientist()
-        {
-            uint tempVal = 0;
-            List<PlayerInfo> tempPlayerList = new();
-            foreach (var player in PlayerInfo.playerList)
-            {
-                if (player.PlayerId == PlayerInfo.AlexID) continue;
-                if (player.roundRole == -1 && tempVal < player.NotScientist)
-                {
-                    tempVal = player.NotScientist;
-                    tempPlayerList.Clear();
-                }
-                if (player.roundRole == -1 && tempVal == player.NotScientist) tempPlayerList.Add(player);
-            }
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
-            var selectedPlayer = tempPlayerList[tempIndex];
-
-            selectedPlayer.roundRole = 4;
-            selectedPlayer.PlayerPtr.RoleID = 6;
-            selectedPlayer.AddUpCounts();
-            selectedPlayer.PlayerPtr.Inventory.AddItem(15);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(35);
-
-            string tempText = "";
-            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
-
-            DebugTranslator.Console(
-                tempText + " were deemed WORTHY\n" +
-                "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
-                "Rolled Scientist with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
-        }
-
         private static void AssignSpawnRole(RoleType role, PlayerInfo? forcedPlayer = null)
-        { //Change rolls to be more rng instead of forcing a queue
-            uint tempVal = 0;
+        {
             List<PlayerInfo> tempPlayerList = new();
             foreach (var player in PlayerInfo.playerList)
             {
-                if (player.roundRole != -1) continue;
-                for(uint x = player.GetRoleCount(role);x>0;x--)
+                if (player.roundRole != RoleType.None) continue;
+                for (uint x = player.GetRoleCount(role) + 1; x > 0; x--)
                 {
                     tempPlayerList.Add(player);
                 }
             }
 
-            int tempIndex = UnityEngine.Random.Range(0, tempPlayerList.Count);
+            int tempIndex = MainModule.RandomTimeSeededPos(0, tempPlayerList.Count-1);
+
+            //DebugTranslator.Console(tempIndex.ToString() + " " + tempPlayerList.Count + " " + role.ToString());
+            foreach (var player in tempPlayerList) DebugTranslator.Console(player.Name);
+            DebugTranslator.Console("1");
             var selectedPlayer = tempPlayerList[tempIndex];
+            DebugTranslator.Console("2");
 
-            selectedPlayer.roundRole = 2;
-            selectedPlayer.PlayerPtr.RoleID = 15;
+            RoleType[] scps = { RoleType.Scp173, RoleType.Scp106, RoleType.Scp049, RoleType.Scp93953 };
+            RoleType scpRole = scps[MainModule.RandomTimeSeededPos(scps.Length-1)];
+            DebugTranslator.Console("3");
+            if (scpRole == lastSCP) scpRole = scps[MainModule.RandomTimeSeededPos(scps.Length-1)];
+            lastSCP = scpRole;
+            DebugTranslator.Console("4");
+
+            if (role == RoleType.Scp173 && scpRole == RoleType.Scp93953)
+                { AntiCamp.doggoPtr = selectedPlayer; AntiCamp.doggoAlive = Timing.RunCoroutine(AntiCamp.DoggoCampTimer()); }
+            DebugTranslator.Console("5");
+
+            selectedPlayer.roundRole = role;
+            DebugTranslator.Console("6");
+            selectedPlayer.PlayerPtr.RoleType = role == RoleType.Scp173 ? scpRole : role;
+            DebugTranslator.Console("7");
             selectedPlayer.AddUpCounts();
+            DebugTranslator.Console("8");
 
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Flashlight);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Ammo9x19);
-            selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Adrenaline);
+            if (role == RoleType.ClassD || role == RoleType.Scientist) 
+                selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Coin);
+            if (role == RoleType.ClassD || role == RoleType.Scientist || role == RoleType.FacilityGuard) 
+                selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Flashlight);
+            if (role == RoleType.FacilityGuard)
+                selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Ammo9x19);
+            if (role == RoleType.FacilityGuard)
+                selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Adrenaline);
+            DebugTranslator.Console("9");
 
-            string tempText = "";
-            foreach (var player in tempPlayerList) tempText += player.PlayerPtr.NickName + ",";
-
-            string roleName = RoleType.None.ToString();
-
+            string roleName = role.ToString();
+            int probabilityCount = 0;
+            DebugTranslator.Console("10");
+            foreach (var player in tempPlayerList)
+                if (player == selectedPlayer) probabilityCount++;
+            DebugTranslator.Console("11");
             DebugTranslator.Console(
-                tempText + " were deemed WORTHY\n" +
                 "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
-                "Rolled " + roleName + " with " + ((1.0f / tempPlayerList.Count) * 100.0f) + "% Probability");
+                "Rolled " + roleName + " with " + (((float)probabilityCount) / tempPlayerList.Count * 100.0f) + "% Probability");
         }
     }
 }

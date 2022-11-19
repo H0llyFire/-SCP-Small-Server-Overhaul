@@ -22,6 +22,8 @@ namespace SCPSLEnforcedRNG.Modules
         }
         public override void SetUpRound()
         {
+            Timing.KillCoroutines(SpectatorRespawnTimer);
+            SpectatorRespawnTimer = Timing.RunCoroutine(SpectatorRespawn());
             Map.Get.Scp914.KnobState = Scp914.Scp914KnobSetting.OneToOne;
             //Map.Get.IntercomText = "";
         }
@@ -29,6 +31,20 @@ namespace SCPSLEnforcedRNG.Modules
         //-------------------------------------------------------------------------------
         //Main
         public static CoroutineHandle SpectatorRespawnTimer { get; set; }
+
+        public static IEnumerator<float> SpectatorRespawn()
+        {
+            for (; ; )
+            {
+                foreach (var player in PlayerInfo.playerList)
+                    if (player.PlayerPtr.RoleType == RoleType.Spectator || player.PlayerPtr.RoleType == RoleType.Tutorial)
+                    {
+                        player.PlayerPtr.ActiveBroadcasts.Clear();
+                        player.PlayerPtr.SendBroadcast(2, "Time until Respawn: " + (int)(BetterRespawns.respawnTimer - Timing.LocalTime));
+                    }
+                yield return Timing.WaitForSeconds(1f);
+            }
+        }
 
         //-------------------------------------------------------------------------------
         //Events

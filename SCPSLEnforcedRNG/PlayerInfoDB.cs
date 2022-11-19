@@ -101,7 +101,7 @@ namespace SCPSLEnforcedRNG
             get { return playerInfo.PrefferedRole; }
             set { playerInfo.PrefferedRole = value; }
         }
-        public short roundRole;
+        public RoleType roundRole;
 
 
         public PlayerInfo(Player playerPtr, string playerId)
@@ -125,7 +125,7 @@ namespace SCPSLEnforcedRNG
 
             index = playerCount;
             playerCount++;
-            roundRole = -1;
+            roundRole = RoleType.None;
             DebugTranslator.Console("Player Registered on Index " + index);
             DebugTranslator.Console(Index.ToString() + " | " + playerInfo.GameIdentifier + " | " + playerInfo.Name);
             PrintInfo();
@@ -149,16 +149,17 @@ namespace SCPSLEnforcedRNG
         }
         public void AddUpCounts()
         {
-            if (roundRole == -1) return;
-            NotSCP =        (roundRole == 0 ? 0 : NotSCP + 1);
-            NotPC =         (roundRole == 1 ? 0 : NotPC + 1);
-            NotGuard =      (roundRole == 2 ? 0 : NotGuard + 1);
-            NotDboi =       (roundRole == 3 ? 0 : NotDboi + 1);
-            NotScientist =  (roundRole == 4 ? 0 : NotScientist + 1);
+            if (roundRole == RoleType.None) return;
+            NotSCP =        (roundRole == RoleType.Scp173 ? 0 : NotSCP + 1);
+            NotPC =         (roundRole == RoleType.Scp079 ? 0 : NotPC + 1);
+            NotGuard =      (roundRole == RoleType.FacilityGuard ? 0 : NotGuard + 1);
+            NotDboi =       (roundRole == RoleType.ClassD ? 0 : NotDboi + 1);
+            NotScientist =  (roundRole == RoleType.Scientist ? 0 : NotScientist + 1);
 
             DebugTranslator.Console("Player role: " + roundRole);
             SavePlayerToDB();
         }
+
         public void SavePlayerToDB()
         {
             repository.Save(playerInfo);

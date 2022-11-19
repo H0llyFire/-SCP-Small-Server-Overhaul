@@ -100,26 +100,135 @@ namespace SCPSLEnforcedRNG.Modules
         }
         public void ClearPlayers()
         {
+            PlayerInfo.playerCount = 0;
             Timing.CallDelayed(1f, () => { PlayerInfo.playerList.Clear(); });
         }
 
         //-------------------------------------------------------------------------------
         //RANDOMS
-        public static int RandomTimeExclusive()
+        private static double randomSeed = 0;
+        public static int RandomTimeExclusivePos()
         {
-            float x = Timing.LocalTime;
-            return (int)x;
+            TimeSpan span = DateTime.Now.Subtract(new DateTime(1970, 1, 1, 0, 0, 0));
+            double number = span.TotalMilliseconds;
+            //while (number > (int.MaxValue - 1)) number -= int.MaxValue;
+
+            number = number % (int.MaxValue-1);
+            //int x = Convert.ToInt32(number);
+            int x = (int)number;
+
+            return x;
         }
-        public static int RandomTimeExclusive(int max)
+        public static int RandomTimeExclusivePos(int max)
         {
-            float x = Timing.LocalTime;
-            return ((int)x) % (max + 1);
+            if (max <= 0) { DebugTranslator.Console("Random Generation Failed: MAX <= 0"); return 0; }
+
+            TimeSpan span = DateTime.Now.Subtract(new DateTime(1970, 1, 1, 0, 0, 0));
+            double number = span.TotalMilliseconds;
+            number = number % int.MaxValue;
+            int x = (int)number;
+
+
+            return x % (max + 1);
         }
-        public static int RandomTimeExclusive(int min, int max)
+        public static int RandomTimeExclusivePos(int min, int max)
         {
+            if (min < 0) { DebugTranslator.Console("Random Generation Failed: MIN < 0"); return 0; }
+            if (max <= 0) { DebugTranslator.Console("Random Generation Failed: MAX <= 0"); return 0; }
             if (min > max) {DebugTranslator.Console("Random Generation Failed: MIN > MAX"); return min - 1; }
-            float x = Timing.LocalTime;
-            return (((int)x) + min) % (max + 1);
+
+            TimeSpan span = DateTime.Now.Subtract(new DateTime(1970, 1, 1, 0, 0, 0));
+            double number = span.TotalMilliseconds;
+            number = number % int.MaxValue;
+            int x = (int)number;
+
+
+            return (x % (max-min + 1)) + min;
+        }
+        public static int RandomTimeSeededPos()
+        {
+            TimeSpan span = DateTime.Now.Subtract(new DateTime(1970, 1, 1, 0, 0, 0));
+            double number = span.TotalMilliseconds;
+            number = number + randomSeed;
+
+            string num = number.ToString();
+            if (num.Contains(".")) randomSeed = double.Parse(num.Substring(num.IndexOf('.') - 6, 5));
+            else randomSeed = double.Parse(num.Substring(num.Length - 6));
+            randomSeed *= randomSeed;
+
+            DebugTranslator.Console(num + " | " + randomSeed);
+
+
+            number = number % int.MaxValue;
+            int x = (int)number;
+
+            return x;
+        }
+        public static int RandomTimeSeededPos(int max)
+        {
+            if (max <= 0) { DebugTranslator.Console("Random Generation Failed: MAX <= 0"); return 0; }
+
+            TimeSpan span = DateTime.Now.Subtract(new DateTime(1970, 1, 1, 0, 0, 0));
+            double number = span.TotalMilliseconds;
+            number = number + randomSeed;
+
+            string num = number.ToString();
+            if (num.Contains(".")) randomSeed = double.Parse(num.Substring(num.IndexOf('.') - 6, 5));
+            else randomSeed = double.Parse(num.Substring(num.Length - 6));
+            randomSeed *= randomSeed;
+
+            number = number % int.MaxValue;
+            int x = (int)number;
+
+            return x % (max + 1);
+        }
+        public static int RandomTimeSeededPos(int min, int max)
+        {
+            if (min < 0) { DebugTranslator.Console("Random Generation Failed: MIN < 0"); return 0; }
+            if (max <= 0) { DebugTranslator.Console("Random Generation Failed: MAX <= 0"); return 0; }
+            if (min > max) { DebugTranslator.Console("Random Generation Failed: MIN > MAX"); return min - 1; }
+
+            TimeSpan span = DateTime.Now.Subtract(new DateTime(1970, 1, 1, 0, 0, 0));
+            double number = span.TotalMilliseconds;
+            number = number + randomSeed;
+
+            string num = number.ToString();
+            if (num.Contains(".")) randomSeed = double.Parse(num.Substring(num.IndexOf('.') - 6, 5));
+            else randomSeed = double.Parse(num.Substring(num.Length - 6));
+            randomSeed *= randomSeed;
+
+            number = number % int.MaxValue;
+            int x = (int)number;
+
+            return (x % (max - min + 1)) + min;
+        }
+
+
+        public static void TestRandom(int customMin = 0, int customMax = 0, int tests = 4)
+        {
+            string output = "";
+
+            output += "Random Time Exclusive: " + RandomTimeExclusivePos() + "\n";
+            output += "Random Time Exclusive (MAX 150): " + RandomTimeExclusivePos(150) + "\n";
+            output += "Random Time Exclusive (MAX 87 477 231): " + RandomTimeExclusivePos(87477231) + "\n";
+            output += "Random Time Exclusive (MAX " + customMax + "): " + RandomTimeExclusivePos(customMax) + "\n";
+            output += "Random Time Exclusive (MIN 5) (MAX 100): " + RandomTimeExclusivePos(5, 100) + "\n";
+            output += "Random Time Exclusive (MIN 5 871) (MAX 14 568 101): " + RandomTimeExclusivePos(5871, 14568101) + "\n";
+            output += "Random Time Exclusive (MIN " + customMin + ") (MAX " + customMax + "): " + RandomTimeExclusivePos(customMin, customMax) + "\n";
+            for (int i = 0; i < tests; i++) output += "Random Time Exclusive Test (MAX 20) #" + i + ": " + RandomTimeExclusivePos(20) + "\n";
+            output += "-----------------------------------------------\n";
+
+            output += "Random Time Seeded: " + RandomTimeSeededPos() + "\n";
+            output += "Random Time Seeded (MAX 150): " + RandomTimeSeededPos(150) + "\n";
+            output += "Random Time Seeded (MAX 87 477 231): " + RandomTimeSeededPos(87477231) + "\n";
+            output += "Random Time Seeded (MAX " + customMax + "): " + RandomTimeSeededPos(customMax) + "\n";
+            output += "Random Time Seeded (MIN 5) (MAX 100): " + RandomTimeSeededPos(5, 100) + "\n";
+            output += "Random Time Seeded (MIN 5 871) (MAX 14 568 101): " + RandomTimeSeededPos(5871, 14568101) + "\n";
+            output += "Random Time Seeded (MIN " + customMin + ") (MAX " + customMax + "): " + RandomTimeSeededPos(customMin, customMax) + "\n";
+            for (int i = 0; i < tests; i++) output += "Random Time Seeded Test (MAX 20) #" + i + ": " + RandomTimeSeededPos(20) + "\n";
+            output += "-----------------------------------------------";
+
+            DebugTranslator.Console(output,1,true);
         }
     }
 }
