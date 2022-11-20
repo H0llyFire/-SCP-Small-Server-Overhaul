@@ -100,7 +100,7 @@ namespace SCPSLEnforcedRNG.Modules
         }
         public static void TrackKeyCards(PlayerChangeItemEventArgs args)
         {
-            List<ItemType> cards = new() { ItemType.KeycardChaosInsurgency, ItemType.KeycardNTFCommander, ItemType.KeycardFacilityManager, ItemType.KeycardContainmentEngineer, ItemType.KeycardNTFOfficer, ItemType.KeycardNTFLieutenant, ItemType.KeycardResearchCoordinator, ItemType.KeycardGuard, ItemType.KeycardZoneManager, ItemType.KeycardScientist, ItemType.KeycardJanitor };
+            List<ItemType> cards = new() { ItemType.KeycardChaosInsurgency, ItemType.KeycardNTFCommander, ItemType.KeycardFacilityManager, ItemType.KeycardContainmentEngineer,  ItemType.KeycardNTFLieutenant, ItemType.KeycardNTFOfficer, ItemType.KeycardResearchCoordinator, ItemType.KeycardGuard, ItemType.KeycardZoneManager, ItemType.KeycardScientist, ItemType.KeycardJanitor, ItemType.None };
             if (args.NewItem.ItemCategory == ItemCategory.Keycard)
             {
 

@@ -1,11 +1,7 @@
 ﻿using MEC;
 using Synapse.Api;
 using Synapse.Api.Events.SynapseEventArguments;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using UnityEngine;
 
 namespace SCPSLEnforcedRNG.Modules
 {
@@ -25,6 +21,12 @@ namespace SCPSLEnforcedRNG.Modules
             Timing.KillCoroutines(SpectatorRespawnTimer);
             SpectatorRespawnTimer = Timing.RunCoroutine(SpectatorRespawn());
             Map.Get.Scp914.KnobState = Scp914.Scp914KnobSetting.OneToOne;
+
+
+            Synapse.Api.CustomObjects.SynapseWorkStationObject outsideWorkStation = 
+                new(new(148.4816f, 992.7029f, -46.49313f), Quaternion.Euler(0f, 90f, 0f), new(1f, 1f, 1f));
+            Map.Get.WorkStations.Add(outsideWorkStation.WorkStation);
+
             //Map.Get.IntercomText = "";
         }
 

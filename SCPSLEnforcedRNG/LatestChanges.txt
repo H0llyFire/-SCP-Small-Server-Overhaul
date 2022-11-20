@@ -8,9 +8,13 @@ Version 1.2.0
 + Workstations ARE INSTANT
 + SCP 914 (Upgrader) starts on 1:1
 + Time until respawns is shown on respawns
++ Forced MTF/CHI Waves on SCP Kill By Scientist/Dclass
++ Schematics handler
++ Armory In Doggo Room with a 
++ Alpha-1 MTF Wave when MTFs are in a disadvantage
 
 ? Fixed Helicopter Animation Start Time
-? Bunch More BugFixes
 ? Doggo AntiCamp has higher wait time Outside
+? Bunch More BugFixes
 
--
+- SCP 096

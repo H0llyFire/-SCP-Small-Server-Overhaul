@@ -125,27 +125,19 @@ namespace SCPSLEnforcedRNG.Modules
 
             //DebugTranslator.Console(tempIndex.ToString() + " " + tempPlayerList.Count + " " + role.ToString());
             foreach (var player in tempPlayerList) DebugTranslator.Console(player.Name);
-            DebugTranslator.Console("1");
             var selectedPlayer = tempPlayerList[tempIndex];
-            DebugTranslator.Console("2");
 
             RoleType[] scps = { RoleType.Scp173, RoleType.Scp106, RoleType.Scp049, RoleType.Scp93953 };
             RoleType scpRole = scps[MainModule.RandomTimeSeededPos(scps.Length-1)];
-            DebugTranslator.Console("3");
             if (scpRole == lastSCP) scpRole = scps[MainModule.RandomTimeSeededPos(scps.Length-1)];
             lastSCP = scpRole;
-            DebugTranslator.Console("4");
 
             if (role == RoleType.Scp173 && scpRole == RoleType.Scp93953)
                 { AntiCamp.doggoPtr = selectedPlayer; AntiCamp.doggoAlive = Timing.RunCoroutine(AntiCamp.DoggoCampTimer()); }
-            DebugTranslator.Console("5");
 
             selectedPlayer.roundRole = role;
-            DebugTranslator.Console("6");
             selectedPlayer.PlayerPtr.RoleType = role == RoleType.Scp173 ? scpRole : role;
-            DebugTranslator.Console("7");
             selectedPlayer.AddUpCounts();
-            DebugTranslator.Console("8");
 
             if (role == RoleType.ClassD || role == RoleType.Scientist) 
                 selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Coin);
@@ -155,14 +147,11 @@ namespace SCPSLEnforcedRNG.Modules
                 selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Ammo9x19);
             if (role == RoleType.FacilityGuard)
                 selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Adrenaline);
-            DebugTranslator.Console("9");
 
             string roleName = role.ToString();
             int probabilityCount = 0;
-            DebugTranslator.Console("10");
             foreach (var player in tempPlayerList)
                 if (player == selectedPlayer) probabilityCount++;
-            DebugTranslator.Console("11");
             DebugTranslator.Console(
                 "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
                 "Rolled " + roleName + " with " + (((float)probabilityCount) / tempPlayerList.Count * 100.0f) + "% Probability");
