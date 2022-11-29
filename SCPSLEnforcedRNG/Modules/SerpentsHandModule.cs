@@ -22,5 +22,16 @@ namespace SCPSLEnforcedRNG.Modules
         //Main
         //-------------------------------------------------------------------------------
         //Events
+        //-------------------------------------------------------------------------------
+        //Roles
+        public class SerpentsHandPerson : Synapse.Api.Roles.Role
+        {
+            public override int GetRoleID() => 110;
+            public override string GetRoleName() => "Serpent's Hand";
+            public override void Spawn()
+            {
+
+            }
+        }
     }
 }

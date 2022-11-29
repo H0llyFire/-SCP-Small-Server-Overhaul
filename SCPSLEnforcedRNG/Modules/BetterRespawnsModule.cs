@@ -44,13 +44,13 @@ namespace SCPSLEnforcedRNG.Modules
                 respawnTimer = Timing.LocalTime + time;
 
                 //bool isChaos = (UnityEngine.Random.Range(0f, 1f) + MainModule.ServerConfigs.chaosChance) > 1f;
-                bool isChaos = (MainModule.RandomTimeSeededPos(0,100) + (int)(MainModule.ServerConfigs.chaosChance*100)) > 100;
+                bool isChaos = (MainModule.RandomTimeSeededPos(0,10) + (int)(MainModule.ServerConfigs.chaosChance*10)) > 10;
 
                 yield return Timing.WaitForSeconds(time - 20f);
                 if (!(Map.Get.Nuke.Detonated || Map.Get.Nuke.Active))
                     TurnSpectatorsToTutorial();
 
-                yield return Timing.WaitForSeconds(isChaos?10f:14f);
+                yield return Timing.WaitForSeconds(isChaos?10f:13f);
                 if ((!Map.Get.Nuke.Detonated) && MainModule.GetRoleAmount(14) > 0)
                     Round.Get.SpawnVehicle(isChaos);
                 else TurnTutorialToSpectators();

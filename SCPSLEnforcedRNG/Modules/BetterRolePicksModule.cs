@@ -66,9 +66,11 @@ namespace SCPSLEnforcedRNG.Modules
         //-------------------------------------------------------------------------------
         //Main
         public static RoleType lastSCP = RoleType.None;
+        private static int _numberOfSCP;
 
         public static void ResetRoles()
         {
+            _numberOfSCP = 0;
             foreach (var player in PlayerInfo.playerList)
             {
                 player.roundRole = RoleType.None;
@@ -115,16 +117,15 @@ namespace SCPSLEnforcedRNG.Modules
             foreach (var player in PlayerInfo.playerList)
             {
                 if (player.roundRole != RoleType.None) continue;
-                for (uint x = player.GetRoleCount(role) + 1; x > 0; x--)
-                {
-                    tempPlayerList.Add(player);
-                }
+                for (uint x = player.GetRoleCount(role)+1; x > 0; x--)
+                    for(uint y = x; y > 0; y--)
+                        tempPlayerList.Add(player);
             }
 
             int tempIndex = MainModule.RandomTimeSeededPos(0, tempPlayerList.Count-1);
 
             //DebugTranslator.Console(tempIndex.ToString() + " " + tempPlayerList.Count + " " + role.ToString());
-            foreach (var player in tempPlayerList) DebugTranslator.Console(player.Name);
+            //foreach (var player in tempPlayerList) DebugTranslator.Console(player.Name);
             var selectedPlayer = tempPlayerList[tempIndex];
 
             RoleType[] scps = { RoleType.Scp173, RoleType.Scp106, RoleType.Scp049, RoleType.Scp93953 };
@@ -134,6 +135,13 @@ namespace SCPSLEnforcedRNG.Modules
 
             if (role == RoleType.Scp173 && scpRole == RoleType.Scp93953)
                 { AntiCamp.doggoPtr = selectedPlayer; AntiCamp.doggoAlive = Timing.RunCoroutine(AntiCamp.DoggoCampTimer()); }
+            if (role == RoleType.Scp173 && scpRole == RoleType.Scp173)
+                Timing.CallDelayed(1.2f, () =>
+                {
+                    foreach (var player in PlayerInfo.playerList)
+                        if (player.PlayerPtr.RoleType == RoleType.ClassD || player.PlayerPtr.RoleType == RoleType.Scientist)
+                            player.PlayerPtr.SendBroadcast(8, "Failure with SCP 173's containment detected. Evacuate Immediately.");
+                });
 
             selectedPlayer.roundRole = role;
             selectedPlayer.PlayerPtr.RoleType = role == RoleType.Scp173 ? scpRole : role;
@@ -147,6 +155,8 @@ namespace SCPSLEnforcedRNG.Modules
                 selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Ammo9x19);
             if (role == RoleType.FacilityGuard)
                 selectedPlayer.PlayerPtr.Inventory.AddItem(ItemType.Adrenaline);
+            if (role == RoleType.Scp173)
+                _numberOfSCP++;
 
             string roleName = role.ToString();
             int probabilityCount = 0;
@@ -155,6 +165,22 @@ namespace SCPSLEnforcedRNG.Modules
             DebugTranslator.Console(
                 "Player " + selectedPlayer.PlayerPtr.NickName + "\n" +
                 "Rolled " + roleName + " with " + (((float)probabilityCount) / tempPlayerList.Count * 100.0f) + "% Probability");
+        }
+        //-------------------------------------------------------------------------------
+        //Events
+        public static void CheckSCPDeathForPC(PlayerDeathEventArgs args)
+        {
+            if (args.Victim.Team == Team.SCP && args.Victim.RoleType != RoleType.Scp079)
+            {
+                _numberOfSCP--;
+                if(_numberOfSCP <= 0)
+                    foreach(var player in PlayerInfo.playerList)
+                    {
+                        if (player.PlayerPtr.RoleType == RoleType.Scp079)
+                            player.PlayerPtr.RoleType = RoleType.Spectator;
+                    }
+                    
+            }
         }
     }
 }

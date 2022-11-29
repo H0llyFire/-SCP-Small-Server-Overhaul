@@ -52,7 +52,8 @@ namespace SCPSLEnforcedRNG.Modules
         //Events
         public static void OnRadio(PlayerRadioInteractEventArgs args)
         {
-            args.Radio.Durabillity = 100;
+            if(args.Radio!=null)
+                args.Radio.Durabillity = 100;
         }
         public void CuffInteract(DoorInteractEventArgs args)
         {

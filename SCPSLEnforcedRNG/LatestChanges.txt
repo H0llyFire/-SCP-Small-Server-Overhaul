@@ -1,5 +1,14 @@
 ﻿-----------------
-Version 1.2.0
+Version 1.2.1b
+-----------------
++ New Broadcast when peanut is spawned
+
+? Shorter cassie messages
+? Changed RNG
+? exponential pick chance for roles
+
+-----------------
+Version 1.2.0a
 -----------------
 + Stats
 + Rewrote Most Of My Code

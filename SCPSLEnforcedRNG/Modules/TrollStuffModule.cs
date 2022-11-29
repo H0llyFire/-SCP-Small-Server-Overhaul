@@ -1,5 +1,6 @@
 ﻿using Synapse.Api;
 using Synapse.Api.Events.SynapseEventArguments;
+using Synapse.Api.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,10 @@ namespace SCPSLEnforcedRNG.Modules
         }
 
         //-------------------------------------------------------------------------------
+        //Main
+        List<SynapseItem> coins = new();
+
+        //-------------------------------------------------------------------------------
         //Events
         public void RollLeftHandiness(PlayerChangeItemEventArgs args)
         {
@@ -34,6 +39,10 @@ namespace SCPSLEnforcedRNG.Modules
                 
             }
 
+        }
+        public void SpawnCoin(PlaceBulletHoleEventArgs args)
+        {
+            coins.Add(new(ItemType.Coin, args.Position));
         }
         
     }

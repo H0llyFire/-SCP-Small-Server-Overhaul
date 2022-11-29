@@ -46,7 +46,7 @@ namespace SCPSLEnforcedRNG.Modules
                 Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Open = true;
                 Map.Get.GetDoor(Synapse.Api.Enum.DoorType.Gate_B).Locked = true;
 
-                Map.Get.Cassie("ATTENTION . NO .g1 CLASS D PERSONNEL DETECTED INSIDE .g2 THE FACILITY . ALL .g3 FACILITY GATES HAVE BEEN OPENED . SCIENCE .g4 PERSONNEL SHOULD EVACUATE .g1 IMMEDIATELY");
+                Map.Get.Cassie("NO .g1 CLASS D PERSONNEL DETECTED INSIDE .g2 THE FACILITY . ALL GATES HAVE BEEN OPENED");
                 Map.Get.SendBroadcast(10, "All Gates Have Been Opened.");
             });
         }
@@ -61,8 +61,6 @@ namespace SCPSLEnforcedRNG.Modules
 
                 if ((generators == 1 && scanTime >= 960f) || (generators == 2 && scanTime >= 480f) || (generators == 3 && scanTime >= 240f))
                 {
-                    Map.Get.Cassie("jam_010_3 WARNING . FACILITY WIDE CAMERA SCAN IN T MINUS .g1 15 SECONDS");
-                    yield return Timing.WaitForSeconds(15f);
                     ScanFacility();
                     LastScanTime = Timing.LocalTime;
                 }
