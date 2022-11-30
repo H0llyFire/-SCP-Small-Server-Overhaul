@@ -8,6 +8,7 @@ namespace SCPSLEnforcedRNG.Modules
 {
     public abstract class BaseModule
     {
+        // ahoj omegalul kys
         //-------------------------------------------------------------------------------
         //Override
         //-------------------------------------------------------------------------------
