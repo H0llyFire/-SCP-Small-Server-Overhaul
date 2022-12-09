@@ -120,6 +120,7 @@ namespace SCPSLEnforcedRNG.Modules
         }
         public static void TrackSCPItemsUsage(PlayerItemInteractEventArgs args)
         {
+            if (args.CurrentItem.ItemType == ItemType.Radio) return;
             if (args.State == ItemInteractState.Finalizing)
             {
                 List<ItemType> types = new List<ItemType>()

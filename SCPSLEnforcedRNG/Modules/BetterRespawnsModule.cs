@@ -28,6 +28,8 @@ namespace SCPSLEnforcedRNG.Modules
         {
             Timing.KillCoroutines(_respawnTimerRoutine);
             _respawnTimerRoutine = Timing.RunCoroutine(RoundRespawnTimer());
+            _hasScientistKilledSCP = false;
+            _hasDclassKilledSCP = false;
         }
         //-------------------------------------------------------------------------------
         //Main
@@ -44,20 +46,21 @@ namespace SCPSLEnforcedRNG.Modules
                 respawnTimer = Timing.LocalTime + time;
 
                 //bool isChaos = (UnityEngine.Random.Range(0f, 1f) + MainModule.ServerConfigs.chaosChance) > 1f;
-                bool isChaos = (MainModule.RandomTimeSeededPos(0,10) + (int)(MainModule.ServerConfigs.chaosChance*10)) > 10;
+                bool isChaos = (MainModule.RandomTimeSeededPos(0,100) + (int)(MainModule.ServerConfigs.chaosChance*100)) > 100;
 
                 yield return Timing.WaitForSeconds(time - 20f);
                 if (!(Map.Get.Nuke.Detonated || Map.Get.Nuke.Active))
                     TurnSpectatorsToTutorial();
+
+                if (_hasDclassKilledSCP && (!_hasScientistKilledSCP)) isChaos = true;
+                if (_hasScientistKilledSCP && (!_hasDclassKilledSCP)) isChaos = false;
 
                 yield return Timing.WaitForSeconds(isChaos?10f:13f);
                 if ((!Map.Get.Nuke.Detonated) && MainModule.GetRoleAmount(14) > 0)
                     Round.Get.SpawnVehicle(isChaos);
                 else TurnTutorialToSpectators();
 
-                yield return Timing.WaitForSeconds(10f);
-                if (_hasDclassKilledSCP && (!_hasScientistKilledSCP)) isChaos = true;
-                if (_hasScientistKilledSCP && (!_hasDclassKilledSCP)) isChaos = false;
+                yield return Timing.WaitForSeconds(isChaos ? 10f : 7f);
 
                 if (!Map.Get.Nuke.Detonated)
                     Round.Get.MtfRespawn(isChaos);
@@ -120,9 +123,11 @@ namespace SCPSLEnforcedRNG.Modules
         }
         public static void CommitAlphaWave(TeamRespawnEventArgs args)
         {
+            return; // Temp closed, didn't work yet anyways
+
             if (args.Team == Respawning.SpawnableTeamType.ChaosInsurgency) return;
             int threatLevel = 0;
-            int safetyLevel = args.Players.Count*20;
+            int safetyLevel = args.Players.Count*20;..
             int divident = 25; //*2.5
 
             foreach(var player in PlayerInfo.playerList)
