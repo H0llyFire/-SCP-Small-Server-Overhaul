@@ -32,6 +32,7 @@ namespace SCPSLEnforcedRNG.Modules
             if (ServerConfigs.ImprovedWarHeadsModuleActive) ReadyModules.Add(new ImprovedWarHeads());
             if (ServerConfigs.UsefulRadioModuleActive) ReadyModules.Add(new UsefulStuff());
             if (ServerConfigs.SchematicsModuleActive) ReadyModules.Add(new SchematicsModule());
+            if (true) ReadyModules.Add(new GuardEscapeModule());
             if (true) ReadyModules.Add(new TrollStuff());
 
             foreach (var module in ReadyModules) if (module.ModuleName!="MainModule") module.Activate();

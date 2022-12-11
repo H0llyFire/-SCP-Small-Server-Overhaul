@@ -11,7 +11,7 @@ namespace SCPSLEnforcedRNG.Modules
 {
     public class GuardEscapeModule : BaseModule
     {
-        public override string ModuleName => throw new NotImplementedException();
+        public override string ModuleName { get { return "GuardEscape"; } }
 
         public override void Activate()
         {
@@ -19,7 +19,10 @@ namespace SCPSLEnforcedRNG.Modules
             Server.Get.RoleManager.RegisterCustomRole<MTFcommander>();
         }
 
-        public void OnEscape(Synapse.Api.Events.SynapseEventArguments.PlayerEscapeEventArgs args) => args.Player.RoleID = 103;
+        public void OnEscape(Synapse.Api.Events.SynapseEventArguments.PlayerEscapeEventArgs args)
+        {
+           
+        }
 
     }
     public class MTFcommander : Synapse.Api.Roles.Role
@@ -27,7 +30,7 @@ namespace SCPSLEnforcedRNG.Modules
         public override int GetRoleID() => 103;
         public override string GetRoleName() => "NTF Commander";
         public override int GetTeamID() => (int)Team.MTF;
-        public override List<int> GetFriendsID() => new List<int> { (int)Team.RSC, (int)Team.RIP };
+        public override List<int> GetFriendsID() => new List<int> { (int)Team.RSC, (int)Team.RIP }; 
         public override List<int> GetEnemiesID() => new List<int> { (int)Team.CHI, (int)Team.SCP, (int)Team.CDP };
         public override void Spawn()
         {
