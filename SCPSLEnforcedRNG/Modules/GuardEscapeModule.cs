@@ -21,7 +21,11 @@ namespace SCPSLEnforcedRNG.Modules
 
         public void OnEscape(Synapse.Api.Events.SynapseEventArguments.PlayerEscapeEventArgs args)
         {
-           
+           if (args.Player.RoleType == RoleType.FacilityGuard && args.Player.IsCuffed == false)
+            {
+                args.Allow = true;
+                args.Player.RoleID = 103;
+            }
         }
 
     }
