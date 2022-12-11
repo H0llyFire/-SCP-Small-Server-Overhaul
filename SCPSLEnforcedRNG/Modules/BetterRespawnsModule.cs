@@ -123,11 +123,11 @@ namespace SCPSLEnforcedRNG.Modules
         }
         public static void CommitAlphaWave(TeamRespawnEventArgs args)
         {
-            return; // Temp closed, didn't work yet anyways
+            //return; // Temp closed, didn't work yet anyways
 
             if (args.Team == Respawning.SpawnableTeamType.ChaosInsurgency) return;
             int threatLevel = 0;
-            int safetyLevel = args.Players.Count*20;..
+            int safetyLevel = args.Players.Count*20;
             int divident = 25; //*2.5
 
             foreach(var player in PlayerInfo.playerList)
