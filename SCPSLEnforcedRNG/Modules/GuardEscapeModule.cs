@@ -41,9 +41,9 @@ namespace SCPSLEnforcedRNG.Modules
             Player.RoleType = RoleType.NtfPrivate;
 
             foreach(var item in Player.Inventory.Items)
-                if (item.ItemType == ItemType.KeycardNTFLieutenant) item.Destroy();
+                if (item.ItemType == ItemType.KeycardNTFOfficer) item.Destroy();
 
-            Player.Inventory.AddItem(ItemType.KeycardNTFOfficer);
+            Player.Inventory.AddItem(ItemType.KeycardNTFLieutenant);
             Player.Inventory.AddItem(ItemType.Adrenaline);
             Player.Inventory.AddItem(ItemType.Medkit);
         }

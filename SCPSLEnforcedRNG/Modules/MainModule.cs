@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 
 namespace SCPSLEnforcedRNG.Modules
 {
+    //Officer Card == Private Card
+    //Lieutenant Card == Sergant Card
+    //Commander Card == Captain Card
+
+
     public class MainModule : BaseModule
     {
         //-------------------------------------------------------------------------------

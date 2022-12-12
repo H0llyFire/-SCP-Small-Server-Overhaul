@@ -127,7 +127,7 @@ namespace SCPSLEnforcedRNG.Modules
 
             if (args.Team == Respawning.SpawnableTeamType.ChaosInsurgency) return;
             int threatLevel = 0;
-            int safetyLevel = args.Players.Count*20;
+            int safetyLevel = args.Players.Count*2;
             int divident = 25; //*2.5
 
             foreach(var player in PlayerInfo.playerList)
@@ -136,14 +136,16 @@ namespace SCPSLEnforcedRNG.Modules
                 else if (player.PlayerPtr.Team == Team.CHI) threatLevel += 20;
                 else if (player.PlayerPtr.RoleType == RoleType.Scp106 || player.PlayerPtr.RoleType == RoleType.Scp049 || player.PlayerPtr.RoleType == RoleType.Scp173 || player.PlayerPtr.RoleType == RoleType.Scp93953) threatLevel += 60;
                 else if (player.PlayerPtr.RoleType == RoleType.Scp0492) threatLevel += 10;
-                else if (player.PlayerPtr.RoleType == RoleType.Scientist) safetyLevel += 10;
-                else if (player.PlayerPtr.RoleType == RoleType.FacilityGuard) safetyLevel += 10;
+                else if (player.PlayerPtr.RoleType == RoleType.Scientist) safetyLevel += 1;
+                else if (player.PlayerPtr.RoleType == RoleType.FacilityGuard) safetyLevel += 1;
             }
+
+            DebugTranslator.Console("Safety Level: " + safetyLevel*10 + "\nThreat Level: " + threatLevel);
             
             
             if(safetyLevel*divident<threatLevel)
             {
-                SetUpAlphaGear(args.Players);
+                Timing.CallDelayed(0.3f, () => SetUpAlphaGear(args.Players));
             }
 
         }
